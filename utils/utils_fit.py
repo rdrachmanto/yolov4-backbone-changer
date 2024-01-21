@@ -137,3 +137,8 @@ def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, op
             torch.save(model.state_dict(), os.path.join(save_dir, "best_epoch_weights.pth"))
             
         torch.save(model.state_dict(), os.path.join(save_dir, "last_epoch_weights.pth"))
+
+        checkpoint_dict = {'epoch': epoch + 1,
+                           'model_state_dict':model.state_dict()}
+        torch.save(checkpoint_dict, os.path.join(save_dir, "checkpoint.pth"))
+        print("Checkpoint for epoch {} has been created: checkpoint.pth".format(epoch + 1))

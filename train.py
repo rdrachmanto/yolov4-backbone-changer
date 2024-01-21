@@ -4,6 +4,7 @@
 import datetime
 import os
 from functools import partial
+import argparse
 
 import numpy as np
 import torch
@@ -40,6 +41,23 @@ from utils.utils_fit import fit_one_epoch
    如果只是训练了几个Step是不会保存的，Epoch和Step的概念要捋清楚一下。
 '''
 if __name__ == "__main__":
+    #-------------------------------#
+    #   Bagian pengaturan argparse  #
+    #-------------------------------#
+    parser = argparse.ArgumentParser()
+    #-----------------------------------------------#
+    #   argparse untuk mekanisme resume training
+    #-----------------------------------------------#
+    parser.add_argument('--resume', action='store_true', help='resume training dari checkpoint terakhir')
+    parser.add_argument('--checkpoint_path', type=str, default=None, help='path file checkpoint jika ingin resume training')
+    #----------------------------------------------------------------------#
+    #   argparse untuk nama folder
+    #   nama folder untuk menyimpan semua informasi hasil train dan test
+    #   dapat dibedakan dengan nomor id yang berbeda
+    #----------------------------------------------------------------------#
+    parser.add_argument('--trial', type=int, default=1, help='id eksperimen')
+
+    args = parser.parse_args()
     #---------------------------------#
     #   Cuda    是否使用Cuda
     #           没有GPU可以设置成False
@@ -102,7 +120,7 @@ if __name__ == "__main__":
     #      可以设置mosaic=True，直接随机初始化参数开始训练，但得到的效果仍然不如有预训练的情况。（像COCO这样的大数据集可以这样做）
     #   2、了解imagenet数据集，首先训练分类模型，获得网络的主干部分权值，分类模型的 主干部分 和该模型通用，基于此进行训练。
     #----------------------------------------------------------------------------------------------------------------------------#
-    model_path      = 'model_data/yolo4_weights.pth'
+    model_path      = ''
     #------------------------------------------------------#
     #   input_shape     输入的shape大小，一定要是32的倍数
     #------------------------------------------------------#
@@ -185,7 +203,7 @@ if __name__ == "__main__":
     #------------------------------------------------------------------#
     Init_Epoch          = 0
     Freeze_Epoch        = 50
-    Freeze_batch_size   = 8
+    Freeze_batch_size   = 16
     #------------------------------------------------------------------#
     #   解冻阶段训练参数
     #   此时模型的主干不被冻结了，特征提取网络会发生改变
@@ -196,12 +214,12 @@ if __name__ == "__main__":
     #   Unfreeze_batch_size     模型在解冻后的batch_size
     #------------------------------------------------------------------#
     UnFreeze_Epoch      = 300
-    Unfreeze_batch_size = 4
+    Unfreeze_batch_size = 8
     #------------------------------------------------------------------#
     #   Freeze_Train    是否进行冻结训练
     #                   默认先冻结主干训练后解冻训练。
     #------------------------------------------------------------------#
-    Freeze_Train        = True
+    Freeze_Train        = False
     
     #------------------------------------------------------------------#
     #   其它训练参数：学习率、优化器、学习率下降有关
@@ -246,7 +264,9 @@ if __name__ == "__main__":
     #------------------------------------------------------------------#
     #   save_dir        权值与日志文件保存的文件夹
     #------------------------------------------------------------------#
-    save_dir            = 'logs'
+    log_dir             = 'logs'
+    folder_name         = 'experiment_{}'.format(args.trial)
+    save_dir            = os.path.join(log_dir, folder_name)
     #------------------------------------------------------------------#
     #   eval_flag       是否在训练时进行评估，评估对象为验证集
     #                   安装pycocotools库后，评估体验更佳。
@@ -300,6 +320,18 @@ if __name__ == "__main__":
     #   创建yolo模型
     #------------------------------------------------------#
     model = YoloBody(anchors_mask, num_classes, pretrained = pretrained)
+
+    if args.resume and args.checkpoint_path:
+        print('Load checkpoint:', args.checkpoint_path)
+        checkpoint = torch.load(args.checkpoint_path, map_location=device)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        print('Succesfully load checkpoint')
+
+        Init_Epoch = checkpoint['epoch'] - 1
+        print('Last epoch: {} | init_epoch: {}'.format(Init_Epoch + 1, Init_Epoch))
+        Init_Epoch = checkpoint['epoch']
+        print('Resume training from epoch: {} | init_epoch: {}'.format(Init_Epoch + 1, Init_Epoch))
+
     if not pretrained:
         weights_init(model)
     if model_path != '':
