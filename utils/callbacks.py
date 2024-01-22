@@ -59,7 +59,9 @@ class LossHistory():
     def load_loss_history(self):
         print('Loading loss history from {} ...'.format({str(self.log_dir)}))
 
-        if os.path.exists(self.log_dir, "epoch_loss.txt"):
+        loss_history_path = os.path.join(self.log_dir, "epoch_loss.txt")
+
+        if os.path.exists(loss_history_path):
             # Load train loss history
             print("Loading epoch loss...")
             with open(os.path.join(self.log_dir, "epoch_loss.txt"), 'r') as f:
@@ -79,7 +81,7 @@ class LossHistory():
             print('Found val loss:{} item(s)\n'.format(self.loss_count + 1))
 
         else:
-            print(f"Warning: Losses log not found\n")
+            print(f"Warning: Loss history not found\n")
 
         self.loaded = True
 
