@@ -41,20 +41,13 @@ from utils.utils_fit import fit_one_epoch
    如果只是训练了几个Step是不会保存的，Epoch和Step的概念要捋清楚一下。
 '''
 if __name__ == "__main__":
-    #-------------------------------#
-    #   Bagian pengaturan argparse  #
-    #-------------------------------#
     parser = argparse.ArgumentParser()
-    #-----------------------------------------------#
-    #   argparse untuk mekanisme resume training
-    #-----------------------------------------------#
+
+    parser.add_argument('backbone', type=str, default=None, help='backbone for yolo')
+
     parser.add_argument('--resume', action='store_true', help='resume training dari checkpoint terakhir')
     parser.add_argument('--checkpoint_path', type=str, default=None, help='path file checkpoint jika ingin resume training')
-    #----------------------------------------------------------------------#
-    #   argparse untuk nama folder
-    #   nama folder untuk menyimpan semua informasi hasil train dan test
-    #   dapat dibedakan dengan nomor id yang berbeda
-    #----------------------------------------------------------------------#
+
     parser.add_argument('--trial', type=int, default=1, help='id eksperimen')
 
     args = parser.parse_args()
@@ -125,6 +118,23 @@ if __name__ == "__main__":
     #   input_shape     输入的shape大小，一定要是32的倍数
     #------------------------------------------------------#
     input_shape     = [416, 416]
+    #-------------------------------#
+    #   所使用的主干特征提取网络
+    #   cspdarknet53
+    #   mobilenetv1
+    #   mobilenetv2
+    #   mobilenetv3
+    #   ghostnet
+    #   vgg
+    #   densenet121
+    #   densenet169
+    #   densenet201
+    #   resnet50
+    #-------------------------------#
+    if args.backbone == None:
+        raise ValueError("Select backbone using flag --backbone ")
+    
+    backbone        = args.backbone
     #----------------------------------------------------------------------------------------------------------------------------#
     #   pretrained      是否使用主干网络的预训练权重，此处使用的是主干的权重，因此是在模型构建的时候进行加载的。
     #                   如果设置了model_path，则主干的权值无需加载，pretrained的值无意义。
@@ -264,8 +274,8 @@ if __name__ == "__main__":
     #------------------------------------------------------------------#
     #   save_dir        权值与日志文件保存的文件夹
     #------------------------------------------------------------------#
-    callback_dir             = 'logs'
-    folder_name         = 'experiment_{}'.format(args.trial)
+    callback_dir        = 'logs'
+    folder_name         = 'experiment_{}_backbone_{}'.format(args.trial, args.backbone)
     save_dir            = os.path.join(callback_dir, folder_name)
     #------------------------------------------------------------------#
     #   eval_flag       是否在训练时进行评估，评估对象为验证集
@@ -319,9 +329,10 @@ if __name__ == "__main__":
     #------------------------------------------------------#
     #   创建yolo模型
     #------------------------------------------------------#
-    model = YoloBody(anchors_mask, num_classes, pretrained = pretrained)
+    model = YoloBody(anchors_mask, num_classes, backbone=backbone, pretrained = pretrained)
 
     if args.resume and args.checkpoint_path:
+        print('Resume Train')
         print('Load checkpoint:', args.checkpoint_path)
         checkpoint = torch.load(args.checkpoint_path, map_location=device)
         model.load_state_dict(checkpoint['model_state_dict'])
@@ -330,7 +341,7 @@ if __name__ == "__main__":
         Init_Epoch = checkpoint['epoch'] - 1
         print('Last epoch: {} | init_epoch: {}'.format(Init_Epoch + 1, Init_Epoch))
         Init_Epoch = checkpoint['epoch']
-        print('Resume training from epoch: {} | init_epoch: {}'.format(Init_Epoch + 1, Init_Epoch))
+        print('Resume training from epoch: {} | init_epoch: {}\n'.format(Init_Epoch + 1, Init_Epoch))
 
     if not pretrained:
         weights_init(model)

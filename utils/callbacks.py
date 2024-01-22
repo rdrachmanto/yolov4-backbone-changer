@@ -57,6 +57,7 @@ class LossHistory():
         self.loss_plot()
 
     def load_loss_history(self):
+        print('Loading loss history from {} ...'.format({str(self.log_dir)}))
         try:
             # Load train loss history
             print("Loading epoch loss...")
@@ -65,7 +66,7 @@ class LossHistory():
                 self.losses = [float(line.strip()) for line in f.readlines()]
                 self.loss_count = len(lines)
 
-            print('found epoch loss:', self.loss_count + 1)
+            print('Found epoch loss:{} item(s)'.format(self.loss_count + 1))
 
             # Load validation loss history
             print("Loading val loss...")
@@ -74,7 +75,7 @@ class LossHistory():
                 self.val_loss = [float(line.strip()) for line in f.readlines()]
                 self.val_loss_count = len(lines)
 
-            print('found epoch loss:', self.loss_count + 1)
+            print('Found val loss:{} item(s)\n'.format(self.loss_count + 1))
 
             self.loaded = True
 
