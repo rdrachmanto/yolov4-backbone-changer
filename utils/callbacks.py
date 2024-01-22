@@ -58,7 +58,8 @@ class LossHistory():
 
     def load_loss_history(self):
         print('Loading loss history from {} ...'.format({str(self.log_dir)}))
-        try:
+
+        if os.path.exists(self.log_dir, "epoch_loss.txt"):
             # Load train loss history
             print("Loading epoch loss...")
             with open(os.path.join(self.log_dir, "epoch_loss.txt"), 'r') as f:
@@ -77,8 +78,8 @@ class LossHistory():
 
             print('Found val loss:{} item(s)\n'.format(self.loss_count + 1))
 
-        except Exception as e:
-            print(f"Error loading loss history: {e}\n")
+        else:
+            print(f"Warning: Losses log not found\n")
 
         self.loaded = True
 
@@ -134,8 +135,12 @@ class EvalCallback():
         
         self.bbox_util          = DecodeBox(self.anchors, self.num_classes, (self.input_shape[0], self.input_shape[1]), self.anchors_mask)
         
+        self.loaded = False
         self.maps       = [0]
         self.epoches    = [0]
+
+        self.load_epoch_map()
+
         if self.eval_flag:
             with open(os.path.join(self.log_dir, "epoch_map.txt"), 'a') as f:
                 f.write(str(0))
@@ -199,6 +204,22 @@ class EvalCallback():
 
         f.close()
         return 
+    
+    def load_epoch_map(self):
+        epoch_map_path = os.path.join(self.log_dir, "epoch_map.txt")
+        print('Loading epoch_map.txt from {} ...'.format(str(epoch_map_path)))
+
+        if os.path.exists(epoch_map_path):
+            with open(epoch_map_path, 'r') as f:
+                lines = f.readlines()
+                for line in lines:
+                    self.maps.append(float(line.strip()))
+            
+            print('Succesfully load epoch_map.txt')
+        else:
+            print("Warning: epoch_map.txt not found\n")
+
+        self.loaded = True
     
     def on_epoch_end(self, epoch, model_eval):
         if epoch % self.period == 0 and self.eval_flag:

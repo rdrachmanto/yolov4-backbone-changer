@@ -495,7 +495,7 @@ def weights_init(net, init_type='normal', init_gain = 0.02):
         elif classname.find('BatchNorm2d') != -1:
             torch.nn.init.normal_(m.weight.data, 1.0, 0.02)
             torch.nn.init.constant_(m.bias.data, 0.0)
-    print('initialize network with %s type' % init_type)
+    print('initialize network with %s type\n' % init_type)
     net.apply(init_func)
 
 def get_lr_scheduler(lr_decay_type, lr, min_lr, total_iters, warmup_iters_ratio = 0.05, warmup_lr_ratio = 0.1, no_aug_iter_ratio = 0.05, step_num = 10):
