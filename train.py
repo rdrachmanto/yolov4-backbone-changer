@@ -264,9 +264,9 @@ if __name__ == "__main__":
     #------------------------------------------------------------------#
     #   save_dir        权值与日志文件保存的文件夹
     #------------------------------------------------------------------#
-    log_dir             = 'logs'
+    callback_dir             = 'logs'
     folder_name         = 'experiment_{}'.format(args.trial)
-    save_dir            = os.path.join(log_dir, folder_name)
+    save_dir            = os.path.join(callback_dir, folder_name)
     #------------------------------------------------------------------#
     #   eval_flag       是否在训练时进行评估，评估对象为验证集
     #                   安装pycocotools库后，评估体验更佳。
@@ -371,8 +371,8 @@ if __name__ == "__main__":
     #   记录Loss
     #----------------------#
     if local_rank == 0:
-        time_str        = datetime.datetime.strftime(datetime.datetime.now(),'%Y_%m_%d_%H_%M_%S')
-        log_dir         = os.path.join(save_dir, "loss_" + str(time_str))
+        # time_str        = datetime.datetime.strftime(datetime.datetime.now(),'%Y_%m_%d_%H_%M_%S')
+        log_dir         = os.path.join(save_dir, "loss")
         loss_history    = LossHistory(log_dir, model, input_shape=input_shape)
     else:
         loss_history    = None

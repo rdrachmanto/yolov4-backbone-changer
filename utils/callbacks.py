@@ -23,8 +23,9 @@ class LossHistory():
         self.log_dir    = log_dir
         self.losses     = []
         self.val_loss   = []
+        self.loaded     = False
         
-        os.makedirs(self.log_dir)
+        os.makedirs(self.log_dir, exist_ok=True)
         self.writer     = SummaryWriter(self.log_dir)
         try:
             dummy_input     = torch.randn(2, 3, input_shape[0], input_shape[1])
@@ -32,9 +33,14 @@ class LossHistory():
         except:
             pass
 
+        self.load_loss_history()
+
     def append_loss(self, epoch, loss, val_loss):
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
+
+        if not self.loaded:
+            self.load_loss_history()
 
         self.losses.append(loss)
         self.val_loss.append(val_loss)
@@ -49,6 +55,31 @@ class LossHistory():
         self.writer.add_scalar('loss', loss, epoch)
         self.writer.add_scalar('val_loss', val_loss, epoch)
         self.loss_plot()
+
+    def load_loss_history(self):
+        try:
+            # Load train loss history
+            print("Loading epoch loss...")
+            with open(os.path.join(self.log_dir, "epoch_loss.txt"), 'r') as f:
+                lines = f.readlines()
+                self.losses = [float(line.strip()) for line in f.readlines()]
+                self.loss_count = len(lines)
+
+            print('found epoch loss:', self.loss_count + 1)
+
+            # Load validation loss history
+            print("Loading val loss...")
+            with open(os.path.join(self.log_dir, "epoch_val_loss.txt"), 'r') as f:
+                lines = f.readlines()
+                self.val_loss = [float(line.strip()) for line in f.readlines()]
+                self.val_loss_count = len(lines)
+
+            print('found epoch loss:', self.loss_count + 1)
+
+            self.loaded = True
+
+        except Exception as e:
+            print(f"Error loading loss history: {e}")
 
     def loss_plot(self):
         iters = range(len(self.losses))
