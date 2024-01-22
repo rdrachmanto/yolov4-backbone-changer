@@ -11,7 +11,7 @@ def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, op
     val_loss    = 0
 
     if local_rank == 0:
-        print('Start Train')
+        print('\nStart Train')
         pbar = tqdm(total=epoch_step,desc=f'Epoch {epoch + 1}/{Epoch}',postfix=dict,mininterval=0.3)
     model_train.train()
     for iteration, batch in enumerate(gen):

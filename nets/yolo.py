@@ -221,7 +221,7 @@ class YoloBody(nn.Module):
     def __init__(self, anchors_mask, num_classes, backbone=None, pretrained = False):
         super(YoloBody, self).__init__()
 
-        print("Create network using Backbone: ", backbone)
+        print("Creating network using Backbone: {}\n".format(backbone))
 
         if backbone == "cspdarknet53":
             #---------------------------------------------------#   

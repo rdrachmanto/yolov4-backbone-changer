@@ -132,7 +132,7 @@ if __name__ == "__main__":
     #   resnet50
     #-------------------------------#
     if args.backbone == None:
-        raise ValueError("Select backbone using flag --backbone ")
+        raise ValueError("Select the backbone using flag --backbone")
     
     backbone        = args.backbone
     #----------------------------------------------------------------------------------------------------------------------------#

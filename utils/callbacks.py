@@ -77,10 +77,10 @@ class LossHistory():
 
             print('Found val loss:{} item(s)\n'.format(self.loss_count + 1))
 
-            self.loaded = True
-
         except Exception as e:
-            print(f"Error loading loss history: {e}")
+            print(f"Error loading loss history: {e}\n")
+
+        self.loaded = True
 
     def loss_plot(self):
         iters = range(len(self.losses))
