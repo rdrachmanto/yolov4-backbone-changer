@@ -43,7 +43,7 @@ from utils.utils_fit import fit_one_epoch
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('backbone', type=str, default=None, help='backbone for yolo')
+    parser.add_argument('--backbone', type=str, default=None, help='backbone for yolo')
 
     parser.add_argument('--resume', action='store_true', help='resume training dari checkpoint terakhir')
     parser.add_argument('--checkpoint_path', type=str, default=None, help='path file checkpoint jika ingin resume training')
