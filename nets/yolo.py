@@ -259,7 +259,7 @@ class YoloBody(nn.Module):
 
             # 3*(5+num_classes)=3*(5+20)=3*(4+1+20)=75
             self.yolo_head1         = yolo_head([1024, len(anchors_mask[2]) * (5 + num_classes)],512)
-        elif backbone is not "cspdarknet53":
+        else:
             #---------------------------------------------------#   
             #   生成mobilnet的主干模型，获得三个有效特征层。
             #---------------------------------------------------#
