@@ -1,5 +1,6 @@
 import datetime
 import os
+import re
 
 import torch
 import matplotlib
@@ -138,15 +139,18 @@ class EvalCallback():
         self.bbox_util          = DecodeBox(self.anchors, self.num_classes, (self.input_shape[0], self.input_shape[1]), self.anchors_mask)
         
         self.loaded = False
-        self.maps       = [0]
-        self.epoches    = [0]
+
+        # self.maps       = [0]
+        # self.epoches    = [0]
+        self.epoch_map_dict = {'epoch': [1], 'map':[0]}
 
         self.load_epoch_map()
 
         if self.eval_flag:
             with open(os.path.join(self.log_dir, "epoch_map.txt"), 'a') as f:
-                f.write(str(0))
-                f.write("\n")
+                f.write("epoch {}: {}\n".format(1, 0))
+                # f.write(str(0))
+                # f.write("\n")
 
     def get_map_txt(self, image_id, image, class_names, map_out_path):
         f = open(os.path.join(map_out_path, "detection-results/"+image_id+".txt"), "w", encoding='utf-8') 
@@ -209,17 +213,18 @@ class EvalCallback():
     
     def load_epoch_map(self):
         epoch_map_path = os.path.join(self.log_dir, "epoch_map.txt")
-        print('Loading epoch_map.txt from {} ...'.format(str(epoch_map_path)))
-
         if os.path.exists(epoch_map_path):
             with open(epoch_map_path, 'r') as f:
                 lines = f.readlines()
                 for line in lines:
-                    self.maps.append(float(line.strip()))
-            
-            print('Succesfully load epoch_map.txt')
+                    match = re.match(r'epoch (\d+): (\d+\.\d+)', line)
+                    if match:
+                        epoch = int(match.group(1))
+                        map_value = float(match.group(2))
+                        self.epoch_map_dict['epoch'].append(epoch)
+                        self.epoch_map_dict['map'].append(map_value)
         else:
-            print("Warning: epoch_map.txt not found\n")
+            print("Warning: epoch_map.txt not found")
 
         self.loaded = True
     
@@ -263,15 +268,20 @@ class EvalCallback():
                 temp_map = get_coco_map(class_names = self.class_names, path = self.map_out_path)[1]
             except:
                 temp_map = get_map(self.MINOVERLAP, False, path = self.map_out_path)
-            self.maps.append(temp_map)
-            self.epoches.append(epoch)
+
+            # self.maps.append(temp_map)
+            # self.epoches.append(epoch)
+            self.epoch_map_dict['epoch'].append(epoch + 1)
+            self.epoch_map_dict['map'].append(temp_map)
 
             with open(os.path.join(self.log_dir, "epoch_map.txt"), 'a') as f:
-                f.write(str(temp_map))
-                f.write("\n")
+                f.write("epoch {}: {}\n".format(epoch, temp_map))
+                # f.write(str(temp_map))
+                # f.write("\n")
             
             plt.figure()
-            plt.plot(self.epoches, self.maps, 'red', linewidth = 2, label='train map')
+            plt.plot(self.epoch_map_dict[epoch], self.epoch_map_dict['map'], 'red', linewidth = 2, label='train map')
+            # plt.plot(self.epoches, self.maps, 'red', linewidth = 2, label='train map')
 
             plt.grid(True)
             plt.xlabel('Epoch')
