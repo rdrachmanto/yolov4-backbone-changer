@@ -144,7 +144,7 @@ class EvalCallback():
         # self.epoches    = [0]
         self.epoch_map_dict = {'epoch': [1], 'map':[0]}
 
-        self.load_epoch_map()
+        # self.load_epoch_map()
 
         if self.eval_flag:
             with open(os.path.join(self.log_dir, "epoch_map.txt"), 'a') as f:
