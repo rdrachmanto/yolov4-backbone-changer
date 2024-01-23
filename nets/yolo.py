@@ -232,112 +232,85 @@ class YoloBody(nn.Module):
             #   13,13,1024
             #---------------------------------------------------#
             self.backbone   = darknet53(pretrained)
-
-            self.conv1      = make_three_conv([512,1024],1024)
-            self.SPP        = SpatialPyramidPooling()
-            self.conv2      = make_three_conv([512,1024],2048)
-
-            self.upsample1          = Upsample(512,256)
-            self.conv_for_P4        = conv2d(512,256,1)
-            self.make_five_conv1    = make_five_conv([256, 512],512)
-
-            self.upsample2          = Upsample(256,128)
-            self.conv_for_P3        = conv2d(256,128,1)
-            self.make_five_conv2    = make_five_conv([128, 256],256)
-
-            # 3*(5+num_classes) = 3*(5+20) = 3*(4+1+20)=75
-            self.yolo_head3         = yolo_head([256, len(anchors_mask[0]) * (5 + num_classes)],128)
-
-            self.down_sample1       = conv2d(128,256,3,stride=2)
-            self.make_five_conv3    = make_five_conv([256, 512],512)
-
-            # 3*(5+num_classes) = 3*(5+20) = 3*(4+1+20)=75
-            self.yolo_head2         = yolo_head([512, len(anchors_mask[1]) * (5 + num_classes)],256)
-
-            self.down_sample2       = conv2d(256,512,3,stride=2)
-            self.make_five_conv4    = make_five_conv([512, 1024],1024)
-
-            # 3*(5+num_classes)=3*(5+20)=3*(4+1+20)=75
-            self.yolo_head1         = yolo_head([1024, len(anchors_mask[2]) * (5 + num_classes)],512)
-        else:
+            in_filters = [256, 512, 1024]
+        #---------------------------------------------------#   
+        #   生成mobilnet的主干模型，获得三个有效特征层。
+        #---------------------------------------------------#
+        elif backbone == "mobilenetv1":
             #---------------------------------------------------#   
-            #   生成mobilnet的主干模型，获得三个有效特征层。
+            #   52,52,256；26,26,512；13,13,1024
             #---------------------------------------------------#
-            if backbone == "mobilenetv1":
-                #---------------------------------------------------#   
-                #   52,52,256；26,26,512；13,13,1024
-                #---------------------------------------------------#
-                self.backbone   = MobileNetV1(pretrained=pretrained)
-                in_filters      = [256, 512, 1024]
-            elif backbone == "mobilenetv2":
-                #---------------------------------------------------#   
-                #   52,52,32；26,26,92；13,13,320
-                #---------------------------------------------------#
-                self.backbone   = MobileNetV2(pretrained=pretrained)
-                in_filters      = [32, 96, 320]
-            elif backbone == "mobilenetv3":
-                #---------------------------------------------------#   
-                #   52,52,40；26,26,112；13,13,160
-                #---------------------------------------------------#
-                self.backbone   = MobileNetV3(pretrained=pretrained)
-                in_filters      = [40, 112, 160]
-            elif backbone == "ghostnet":
-                #---------------------------------------------------#   
-                #   52,52,40；26,26,112；13,13,160
-                #---------------------------------------------------#
-                self.backbone   = GhostNet(pretrained=pretrained)
-                in_filters      = [40, 112, 160]
-            elif backbone == "vgg":
-                #---------------------------------------------------#   
-                #   52,52,256；26,26,512；13,13,512
-                #---------------------------------------------------#
-                self.backbone   = VGG(pretrained=pretrained)
-                in_filters      = [256, 512, 512]
-            elif backbone in ["densenet121", "densenet169", "densenet201"]:
-                #---------------------------------------------------#   
-                #   52,52,256；26,26,512；13,13,1024
-                #---------------------------------------------------#
-                self.backbone   = Densenet(backbone, pretrained=pretrained)
-                in_filters = {
-                    "densenet121" : [256, 512, 1024], 
-                    "densenet169" : [256, 640, 1664], 
-                    "densenet201" : [256, 896, 1920]
-                }[backbone]
-            elif backbone == "resnet50":
-                #---------------------------------------------------#   
-                #   52,52,512；26,26,1024；13,13,2048
-                #---------------------------------------------------#
-                self.backbone   = ResNet(pretrained=pretrained)
-                in_filters      = [512, 1024, 2048]
-            else:
-                raise ValueError('Unsupported backbone - `{}`, Use cspdarknet53, mobilenetv1, mobilenetv2, mobilenetv3, ghostnet, vgg, densenet121, densenet169, densenet201, resnet50.'.format(backbone))
+            self.backbone   = MobileNetV1(pretrained=pretrained)
+            in_filters      = [256, 512, 1024]
+        elif backbone == "mobilenetv2":
+            #---------------------------------------------------#   
+            #   52,52,32；26,26,92；13,13,320
+            #---------------------------------------------------#
+            self.backbone   = MobileNetV2(pretrained=pretrained)
+            in_filters      = [32, 96, 320]
+        elif backbone == "mobilenetv3":
+            #---------------------------------------------------#   
+            #   52,52,40；26,26,112；13,13,160
+            #---------------------------------------------------#
+            self.backbone   = MobileNetV3(pretrained=pretrained)
+            in_filters      = [40, 112, 160]
+        elif backbone == "ghostnet":
+            #---------------------------------------------------#   
+            #   52,52,40；26,26,112；13,13,160
+            #---------------------------------------------------#
+            self.backbone   = GhostNet(pretrained=pretrained)
+            in_filters      = [40, 112, 160]
+        elif backbone == "vgg":
+            #---------------------------------------------------#   
+            #   52,52,256；26,26,512；13,13,512
+            #---------------------------------------------------#
+            self.backbone   = VGG(pretrained=pretrained)
+            in_filters      = [256, 512, 512]
+        elif backbone in ["densenet121", "densenet169", "densenet201"]:
+            #---------------------------------------------------#   
+            #   52,52,256；26,26,512；13,13,1024
+            #---------------------------------------------------#
+            self.backbone   = Densenet(backbone, pretrained=pretrained)
+            in_filters = {
+                "densenet121" : [256, 512, 1024], 
+                "densenet169" : [256, 640, 1664], 
+                "densenet201" : [256, 896, 1920]
+            }[backbone]
+        elif backbone == "resnet50":
+            #---------------------------------------------------#   
+            #   52,52,512；26,26,1024；13,13,2048
+            #---------------------------------------------------#
+            self.backbone   = ResNet(pretrained=pretrained)
+            in_filters      = [512, 1024, 2048]
+        else:
+            raise ValueError('Unsupported backbone - `{}`, Use cspdarknet53, mobilenetv1, mobilenetv2, mobilenetv3, ghostnet, vgg, densenet121, densenet169, densenet201, resnet50.'.format(backbone))
 
-            self.conv1           = make_three_conv([512, 1024], in_filters[2])
-            self.SPP             = SpatialPyramidPooling()
-            self.conv2           = make_three_conv([512, 1024], 2048)
+        self.conv1           = make_three_conv([512, 1024], in_filters[2])
+        self.SPP             = SpatialPyramidPooling()
+        self.conv2           = make_three_conv([512, 1024], 2048)
 
-            self.upsample1       = Upsample(512, 256)
-            self.conv_for_P4     = conv2d(in_filters[1], 256,1)
-            self.make_five_conv1 = make_five_conv([256, 512], 512)
+        self.upsample1       = Upsample(512, 256)
+        self.conv_for_P4     = conv2d(in_filters[1], 256,1)
+        self.make_five_conv1 = make_five_conv([256, 512], 512)
 
-            self.upsample2       = Upsample(256, 128)
-            self.conv_for_P3     = conv2d(in_filters[0], 128,1)
-            self.make_five_conv2 = make_five_conv([128, 256], 256)
+        self.upsample2       = Upsample(256, 128)
+        self.conv_for_P3     = conv2d(in_filters[0], 128,1)
+        self.make_five_conv2 = make_five_conv([128, 256], 256)
 
-            # 3*(5+num_classes) = 3*(5+20) = 3*(4+1+20)=75
-            self.yolo_head3      = yolo_head([256, len(anchors_mask[0]) * (5 + num_classes)], 128)
+        # 3*(5+num_classes) = 3*(5+20) = 3*(4+1+20)=75
+        self.yolo_head3      = yolo_head([256, len(anchors_mask[0]) * (5 + num_classes)], 128)
 
-            self.down_sample1    = conv_dw(128, 256, stride = 2)
-            self.make_five_conv3 = make_five_conv([256, 512], 512)
+        self.down_sample1    = conv_dw(128, 256, stride = 2)
+        self.make_five_conv3 = make_five_conv([256, 512], 512)
 
-            # 3*(5+num_classes) = 3*(5+20) = 3*(4+1+20)=75
-            self.yolo_head2      = yolo_head([512, len(anchors_mask[1]) * (5 + num_classes)], 256)
+        # 3*(5+num_classes) = 3*(5+20) = 3*(4+1+20)=75
+        self.yolo_head2      = yolo_head([512, len(anchors_mask[1]) * (5 + num_classes)], 256)
 
-            self.down_sample2    = conv_dw(256, 512, stride = 2)
-            self.make_five_conv4 = make_five_conv([512, 1024], 1024)
+        self.down_sample2    = conv_dw(256, 512, stride = 2)
+        self.make_five_conv4 = make_five_conv([512, 1024], 1024)
 
-            # 3*(5+num_classes)=3*(5+20)=3*(4+1+20)=75
-            self.yolo_head1      = yolo_head([1024, len(anchors_mask[2]) * (5 + num_classes)], 512)
+        # 3*(5+num_classes)=3*(5+20)=3*(4+1+20)=75
+        self.yolo_head1      = yolo_head([1024, len(anchors_mask[2]) * (5 + num_classes)], 512)
 
 
     def forward(self, x):
