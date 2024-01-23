@@ -123,7 +123,7 @@ class MobileNetV2(nn.Module):
         return x
 
 def mobilenet_v2(pretrained=False, progress=True):
-    model = MobileNetV2(width_mult=0.5)
+    model = MobileNetV2(width_mult=1.0)
     if pretrained:
         state_dict = load_state_dict_from_url(model_urls['mobilenet_v2'], model_dir="model_data",
                                               progress=progress)
@@ -134,5 +134,5 @@ def mobilenet_v2(pretrained=False, progress=True):
 if __name__ == "__main__":
     print(mobilenet_v2())
     from torchinfo import summary
-    z = MobileNetV2(width_mult=1.)
+    z = MobileNetV2(width_mult=1.0)
     summary(z)
