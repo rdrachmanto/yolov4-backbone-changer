@@ -140,17 +140,17 @@ class EvalCallback():
         
         self.loaded = False
 
-        # self.maps       = [0]
-        # self.epoches    = [0]
-        self.epoch_map_dict = {'epoch': [1], 'map':[0]}
+        self.maps       = [0]
+        self.epoches    = [0]
+        # self.epoch_map_dict = {'epoch': [1], 'map':[0]}
 
         # self.load_epoch_map()
 
         if self.eval_flag:
             with open(os.path.join(self.log_dir, "epoch_map.txt"), 'a') as f:
-                f.write("epoch {}: {}\n".format(1, 0))
-                # f.write(str(0))
-                # f.write("\n")
+                # f.write("epoch {}: {}\n".format(1, 0))
+                f.write(str(0))
+                f.write("\n")
 
     def get_map_txt(self, image_id, image, class_names, map_out_path):
         f = open(os.path.join(map_out_path, "detection-results/"+image_id+".txt"), "w", encoding='utf-8') 
@@ -269,19 +269,19 @@ class EvalCallback():
             except:
                 temp_map = get_map(self.MINOVERLAP, False, path = self.map_out_path)
 
-            # self.maps.append(temp_map)
-            # self.epoches.append(epoch)
-            self.epoch_map_dict['epoch'].append(epoch + 1)
-            self.epoch_map_dict['map'].append(temp_map)
+            self.maps.append(temp_map)
+            self.epoches.append(epoch)
+            # self.epoch_map_dict['epoch'].append(epoch + 1)
+            # self.epoch_map_dict['map'].append(temp_map)
 
             with open(os.path.join(self.log_dir, "epoch_map.txt"), 'a') as f:
-                f.write("epoch {}: {}\n".format(epoch, temp_map))
-                # f.write(str(temp_map))
-                # f.write("\n")
+                # f.write("epoch {}: {}\n".format(epoch, temp_map))
+                f.write(str(temp_map))
+                f.write("\n")
             
             plt.figure()
-            plt.plot(self.epoch_map_dict['epoch'], self.epoch_map_dict['map'], 'red', linewidth = 2, label='train map')
-            # plt.plot(self.epoches, self.maps, 'red', linewidth = 2, label='train map')
+            # plt.plot(self.epoch_map_dict['epoch'], self.epoch_map_dict['map'], 'red', linewidth = 2, label='train map')
+            plt.plot(self.epoches, self.maps, 'red', linewidth = 2, label='train map')
 
             plt.grid(True)
             plt.xlabel('Epoch')
