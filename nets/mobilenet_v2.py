@@ -131,6 +131,15 @@ def mobilenet_v2(pretrained=False, progress=True):
 
     return model
 
+def mobilenet_v2_half(pretrained=False, progress=True):
+    model = MobileNetV2(width_mult=0.5)
+    if pretrained:
+        state_dict = load_state_dict_from_url(model_urls['mobilenet_v2'], model_dir="model_data",
+                                              progress=progress)
+        model.load_state_dict(state_dict)
+
+    return model
+
 if __name__ == "__main__":
     print(mobilenet_v2())
     from torchinfo import summary

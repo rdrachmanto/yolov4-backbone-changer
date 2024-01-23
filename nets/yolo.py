@@ -8,7 +8,7 @@ from nets.CSPdarknet import darknet53
 from .densenet import _Transition, densenet121, densenet169, densenet201
 from .ghostnet import ghostnet
 from .mobilenet_v1 import mobilenet_v1
-from .mobilenet_v2 import mobilenet_v2
+from .mobilenet_v2 import mobilenet_v2, mobilenet_v2_half
 from .mobilenet_v3 import mobilenet_v3
 from .resnet import resnet50
 from .vgg import vgg
@@ -28,6 +28,17 @@ class MobileNetV2(nn.Module):
     def __init__(self, pretrained = False):
         super(MobileNetV2, self).__init__()
         self.model = mobilenet_v2(pretrained=pretrained)
+
+    def forward(self, x):
+        out3 = self.model.features[:7](x)
+        out4 = self.model.features[7:14](out3)
+        out5 = self.model.features[14:18](out4)
+        return out3, out4, out5
+    
+class MobileNetV2_half(nn.Module):
+    def __init__(self, pretrained = False):
+        super(MobileNetV2, self).__init__()
+        self.model = mobilenet_v2_half(pretrained=pretrained)
 
     def forward(self, x):
         out3 = self.model.features[:7](x)
@@ -248,6 +259,12 @@ class YoloBody(nn.Module):
             #---------------------------------------------------#
             self.backbone   = MobileNetV2(pretrained=pretrained)
             in_filters      = [32, 96, 320]
+        elif backbone == "mobilenetv2_half":
+            #---------------------------------------------------#   
+            #   52,52,32；26,26,92；13,13,320
+            #---------------------------------------------------#
+            self.backbone   = MobileNetV2(pretrained=pretrained)
+            in_filters      = [16, 48, 160]
         elif backbone == "mobilenetv3":
             #---------------------------------------------------#   
             #   52,52,40；26,26,112；13,13,160
