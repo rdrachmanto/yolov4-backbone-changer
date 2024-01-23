@@ -134,5 +134,5 @@ def mobilenet_v2(pretrained=False, progress=True):
 if __name__ == "__main__":
     print(mobilenet_v2())
     from torchinfo import summary
-    z = MobileNetV2(width_mult=0.5)
+    z = MobileNetV2(width_mult=1.)
     summary(z)
