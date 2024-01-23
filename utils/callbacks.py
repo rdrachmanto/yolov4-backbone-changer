@@ -264,10 +264,11 @@ class EvalCallback():
                         new_f.write("%s %s %s %s %s\n" % (obj_name, left, top, right, bottom))
                         
             print("Calculate Map.")
-            try:
-                temp_map = get_coco_map(class_names = self.class_names, path = self.map_out_path)[1]
-            except:
-                temp_map = get_map(self.MINOVERLAP, False, path = self.map_out_path)
+            # try:
+            #     temp_map = get_coco_map(class_names = self.class_names, path = self.map_out_path)[1]
+            # except:
+            #     temp_map = get_map(self.MINOVERLAP, False, path = self.map_out_path)
+            temp_map = get_map(self.MINOVERLAP, False, path = self.map_out_path)
 
             self.maps.append(temp_map)
             self.epoches.append(epoch)
