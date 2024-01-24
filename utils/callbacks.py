@@ -279,7 +279,7 @@ class EvalCallback():
 
             # self.maps.append(temp_map)
             # self.epoches.append(epoch)
-            self.epoch_map_dict['epoch'].append(epoch + 1)
+            self.epoch_map_dict['epoch'].append(epoch)
             self.epoch_map_dict['map'].append(temp_map)
 
             with open(os.path.join(self.log_dir, "epoch_map.txt"), 'a') as f:
