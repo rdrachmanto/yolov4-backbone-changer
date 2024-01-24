@@ -573,7 +573,7 @@ def get_map(MINOVERLAP, draw_plot, score_threhold=0.5, path = './map_out'):
             F1  = np.array(rec)*np.array(prec)*2 / np.where((np.array(prec)+np.array(rec))==0, 1, (np.array(prec)+np.array(rec)))
 
             sum_AP  += ap
-            text    = "{0:.2f}%".format(ap*100) + " = " + class_name.ljust(3) + " AP " #class_name + " AP = {0:.2f}%".format(ap*100)
+            text    = "{0:.2f}%".format(ap*100) + " = " + class_name + " AP " #class_name + " AP = {0:.2f}%".format(ap*100)
 
             if len(prec)>0:
                 F1_text         = "{0:.2f}".format(F1[score_threhold_idx]) + " = " + class_name + " F1 "
@@ -589,10 +589,10 @@ def get_map(MINOVERLAP, draw_plot, score_threhold=0.5, path = './map_out'):
             results_file.write(text + "\n Precision: " + str(rounded_prec) + "\n Recall :" + str(rounded_rec) + "\n\n")
             
             if len(prec)>0:
-                print(text + "\t||\tscore_threhold=" + str(score_threhold) + " : " + "F1=" + "{0:.2f}".format(F1[score_threhold_idx])\
+                print(text + "\t\t||\tscore_threhold=" + str(score_threhold) + " : " + "F1=" + "{0:.2f}".format(F1[score_threhold_idx])\
                     + " ; Recall=" + "{0:.2f}%".format(rec[score_threhold_idx]*100) + " ; Precision=" + "{0:.2f}%".format(prec[score_threhold_idx]*100))
             else:
-                print(text + "\t||\tscore_threhold=" + str(score_threhold) + " : " + "F1=0.00% ; Recall=0.00% ; Precision=0.00%")
+                print(text + "\t\t||\tscore_threhold=" + str(score_threhold) + " : " + "F1=0.00% ; Recall=0.00% ; Precision=0.00%")
             ap_dictionary[class_name] = ap
 
             n_images = counter_images_per_class[class_name]

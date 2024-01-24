@@ -22,6 +22,7 @@ from .utils_map import get_coco_map, get_map
 class LossHistory():
     def __init__(self, log_dir, model, input_shape):
         self.log_dir    = log_dir
+        self.epoches    = []
         self.losses     = []
         self.val_loss   = []
         self.loaded     = False
@@ -68,20 +69,20 @@ class LossHistory():
             with open(os.path.join(self.log_dir, "epoch_loss.txt"), 'r') as f:
                 lines = f.readlines()
                 self.losses = [float(line.strip()) for line in f.readlines()]
-                self.loss_count = len(lines)
+                self.loss_count = len(self.losses)
 
-            print('Found epoch loss:{} item(s)'.format(self.loss_count + 1))
+            print('Found epoch loss:{} item(s)'.format(self.loss_count))
 
             # Load validation loss history
             print("Loading val loss...")
             with open(os.path.join(self.log_dir, "epoch_val_loss.txt"), 'r') as f:
                 lines = f.readlines()
                 self.val_loss = [float(line.strip()) for line in f.readlines()]
-                self.val_loss_count = len(lines)
+                self.val_loss_count = len(self.val_loss)
 
-            print('Found val loss:{} item(s)\n'.format(self.loss_count + 1))
+            print('Found val loss:{} item(s)'.format(self.loss_count))
 
-            print("Succesfully loss history")
+            print("Succesfully loss history\n")
 
         else:
             print(f"Warning: Loss history not found\n")
