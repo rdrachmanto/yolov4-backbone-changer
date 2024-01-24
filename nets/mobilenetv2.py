@@ -182,8 +182,13 @@ def mobilenetv2_T_w(T, W, feature_dim=100):
 def mobilenetv2_6_025(num_classes):
     return mobilenetv2_T_w(6, 0.25, num_classes)
 
-def mobilenetv2_6_05(num_classes):
-    return mobilenetv2_T_w(6, 0.5, num_classes)
+def mobilenetv2_6_05(num_classes=2, pretrained=False):
+    model = mobilenetv2_T_w(6, 0.5, num_classes)
+
+    if pretrained:
+        model.load_state_dict('dummy.pth')
+
+    return model
 
 def mobilenetv2_6_1(num_classes):
     return mobilenetv2_T_w(6, 1, num_classes)

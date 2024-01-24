@@ -40,7 +40,7 @@ class MobileNetV2_half(nn.Module):
     def __init__(self, pretrained = False):
         super(MobileNetV2_half, self).__init__()
         # self.model = mobilenet_v2_half(pretrained=pretrained)
-        self.model = mobilenetv2_6_05(pretrained=pretrained)
+        self.model = mobilenetv2_6_05(2, pretrained=pretrained)
 
     def forward(self, x):
         out3 = self.model.features[:7](x)
