@@ -58,7 +58,7 @@ class LossHistory():
         self.loss_plot()
 
     def load_loss_history(self):
-        print('Loading loss history from {} ...'.format({str(self.log_dir)}))
+        print(f'Loading loss history from {str(self.log_dir)}...')
 
         loss_history_path = os.path.join(self.log_dir, "epoch_loss.txt")
 
@@ -80,6 +80,8 @@ class LossHistory():
                 self.val_loss_count = len(lines)
 
             print('Found val loss:{} item(s)\n'.format(self.loss_count + 1))
+
+            print("Succesfully loss history")
 
         else:
             print(f"Warning: Loss history not found\n")
@@ -213,6 +215,7 @@ class EvalCallback():
     
     def load_epoch_map(self):
         epoch_map_path = os.path.join(self.log_dir, "epoch_map.txt")
+        print(f"Loading epoch_map.txt from {str(epoch_map_path)}...")
         if os.path.exists(epoch_map_path):
             with open(epoch_map_path, 'r') as f:
                 lines = f.readlines()
@@ -223,6 +226,10 @@ class EvalCallback():
                         map_value = float(match.group(2))
                         self.epoch_map_dict['epoch'].append(epoch)
                         self.epoch_map_dict['map'].append(map_value)
+
+            print(f"Found epoch count: {len(self.epoch_map_dict['epoch'])} item(s)")
+            print(f"Found map count: {len(self.epoch_map_dict['map'])} item(s)")
+            print("Succesfully load epoch_map.txt")
         else:
             print("Warning: epoch_map.txt not found")
 
