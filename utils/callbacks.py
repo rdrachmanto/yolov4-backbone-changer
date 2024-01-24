@@ -68,11 +68,15 @@ class LossHistory():
             print("Loading epoch loss...")
             with open(os.path.join(self.log_dir, "epoch_loss.txt"), 'r') as f:
                 lines = f.readlines()
-                self.losses = [float(line.strip()) for line in f.readlines()]
-                self.loss_count = len(self.losses)
+            
+            for line in lines:
+                number = float(line.strip())
+                self.losses.append(number)
+                # self.losses = [float(line.strip()) for line in f.readlines()]
+                # self.loss_count = len(self.losses)
 
-            print(lines)
-            print('Found epoch loss:{} item(s)'.format(self.loss_count))
+            print(self.losses)
+            print('Found epoch loss:{} item(s)'.format(len(self.losses)))
 
             # Load validation loss history
             print("Loading val loss...")
