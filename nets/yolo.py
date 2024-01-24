@@ -8,7 +8,8 @@ from nets.CSPdarknet import darknet53
 from .densenet import _Transition, densenet121, densenet169, densenet201
 from .ghostnet import ghostnet
 from .mobilenet_v1 import mobilenet_v1
-from .mobilenet_v2 import mobilenet_v2, mobilenet_v2_half
+# from .mobilenet_v2 import mobilenet_v2, mobilenet_v2_half
+from .mobilenetv2 import mobilenetv2_6_05
 from .mobilenet_v3 import mobilenet_v3
 from .resnet import resnet50
 from .vgg import vgg
@@ -38,7 +39,8 @@ class MobileNetV2(nn.Module):
 class MobileNetV2_half(nn.Module):
     def __init__(self, pretrained = False):
         super(MobileNetV2_half, self).__init__()
-        self.model = mobilenet_v2_half(pretrained=pretrained)
+        # self.model = mobilenet_v2_half(pretrained=pretrained)
+        self.model = mobilenetv2_6_05(pretrained=pretrained)
 
     def forward(self, x):
         out3 = self.model.features[:7](x)
@@ -333,6 +335,10 @@ class YoloBody(nn.Module):
     def forward(self, x):
         #  backbone
         x2, x1, x0 = self.backbone(x)
+
+        print(x2)
+        print(x1)
+        print(x0)
 
         # 13,13,1024 -> 13,13,512 -> 13,13,1024 -> 13,13,512 -> 13,13,2048 
         P5 = self.conv1(x0)

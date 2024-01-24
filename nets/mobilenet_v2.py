@@ -143,5 +143,5 @@ def mobilenet_v2_half(pretrained=False, progress=True):
 if __name__ == "__main__":
     print(mobilenet_v2())
     from torchinfo import summary
-    z = MobileNetV2(width_mult=1.0)
-    summary(z)
+    model = MobileNetV2(width_mult=0.5)
+    summary(model)
