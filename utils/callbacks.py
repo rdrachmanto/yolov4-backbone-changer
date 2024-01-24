@@ -71,6 +71,7 @@ class LossHistory():
                 self.losses = [float(line.strip()) for line in f.readlines()]
                 self.loss_count = len(self.losses)
 
+            print(self.losses)
             print('Found epoch loss:{} item(s)'.format(self.loss_count))
 
             # Load validation loss history
