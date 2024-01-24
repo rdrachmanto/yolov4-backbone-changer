@@ -349,9 +349,9 @@ class YoloBody(nn.Module):
         #  backbone
         x2, x1, x0 = self.backbone(x)
 
-        print(x2)
-        print(x1)
-        print(x0)
+        print(x2.shape)
+        print(x1.shape)
+        print(x0.shape)
 
         # 13,13,1024 -> 13,13,512 -> 13,13,1024 -> 13,13,512 -> 13,13,2048 
         P5 = self.conv1(x0)
