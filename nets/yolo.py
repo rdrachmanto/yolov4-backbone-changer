@@ -36,17 +36,30 @@ class MobileNetV2(nn.Module):
         out5 = self.model.features[14:18](out4)
         return out3, out4, out5
     
+# class MobileNetV2_half(nn.Module):
+#     def __init__(self, pretrained = False):
+#         super(MobileNetV2_half, self).__init__()
+#         self.model = mobilenet_v2_half(pretrained=pretrained)
+
+#     def forward(self, x):
+#         out3 = self.model.features[:7](x)
+#         out4 = self.model.features[7:14](out3)
+#         out5 = self.model.features[14:18](out4)
+#         return out3, out4, out5
+    
 class MobileNetV2_half(nn.Module):
     def __init__(self, pretrained = False):
         super(MobileNetV2_half, self).__init__()
-        # self.model = mobilenet_v2_half(pretrained=pretrained)
         self.model = mobilenetv2_6_05(2, pretrained=pretrained)
 
     def forward(self, x):
-        out3 = self.model.features[:7](x)
-        out4 = self.model.features[7:14](out3)
-        out5 = self.model.features[14:18](out4)
+        conv1 = self.model.conv1(x)
+        out3 = self.model.blocks[:3](conv1)
+        out4 = self.model.blocks[3:5](out3)
+        pre_out5 = self.model.features[5:7](out4)
+        out5 = self.model.conv2(pre_out5)
         return out3, out4, out5
+
 
 class MobileNetV3(nn.Module):
     def __init__(self, pretrained = False):

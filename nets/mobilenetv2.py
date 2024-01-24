@@ -65,7 +65,7 @@ class MobileNetV2(nn.Module):
     """mobilenetV2"""
     def __init__(self, T,
                  feature_dim,
-                 input_size=32,
+                 input_size=416,
                  width_mult=1.,
                  remove_avg=False):
         super(MobileNetV2, self).__init__()
@@ -174,7 +174,6 @@ class MobileNetV2(nn.Module):
                 m.weight.data.normal_(0, 0.01)
                 m.bias.data.zero_()
 
-
 def mobilenetv2_T_w(T, W, feature_dim=100):
     model = MobileNetV2(T=T, feature_dim=feature_dim, width_mult=W)
     return model
@@ -193,14 +192,29 @@ def mobilenetv2_6_05(num_classes=2, pretrained=False):
 def mobilenetv2_6_1(num_classes):
     return mobilenetv2_T_w(6, 1, num_classes)
 
+class OutCheck(nn.Module):
+    def __init__(self, pretrained = False):
+        super(OutCheck, self).__init__()
+        self.model = mobilenetv2_6_05(2, pretrained=pretrained)
+
+    def forward(self, x):
+        conv1 = self.model.conv1(x)
+        out3 = self.model.blocks[:3](conv1)
+        out4 = self.model.blocks[3:5](out3)
+        pre_out5 = self.model.features[5:7](out4)
+        out5 = self.model.conv2(pre_out5)
+        return out3, out4, out5
 
 if __name__ == '__main__':
     from torchinfo import summary
 
-    x = torch.randn(2, 3, 32, 32)
+    x = torch.randn(1, 3, 416, 416)
 
-    net = mobilenetv2_6_05(1000)
-    summary(net)
+    # print(mobilenetv2_T_w(6, 0.5, 1000).conv1)
+    # print(mobilenetv2_T_w(6, 0.5, 1000).blocks[5:7])
+
+    # net = mobilenetv2_6_05(1000)
+    # summary(net)
 
     # feats, logit = net(x, is_feat=True, preact=True)
     # for f in feats:
