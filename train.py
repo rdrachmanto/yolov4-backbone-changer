@@ -224,7 +224,7 @@ if __name__ == "__main__":
     #   Unfreeze_batch_size     模型在解冻后的batch_size
     #------------------------------------------------------------------#
     UnFreeze_Epoch      = 300
-    Unfreeze_batch_size = 8
+    Unfreeze_batch_size = 16
     #------------------------------------------------------------------#
     #   Freeze_Train    是否进行冻结训练
     #                   默认先冻结主干训练后解冻训练。
@@ -239,7 +239,7 @@ if __name__ == "__main__":
     #   Min_lr          模型的最小学习率，默认为最大学习率的0.01
     #------------------------------------------------------------------#
     Init_lr             = 1e-2
-    Min_lr              = 1e-3 # Init_lr * 0.01
+    Min_lr              = Init_lr * 0.01
     #------------------------------------------------------------------#
     #   optimizer_type  使用到的优化器种类，可选的有adam、sgd
     #                   当使用Adam优化器时建议设置  Init_lr=1e-3
@@ -480,10 +480,8 @@ if __name__ == "__main__":
         nbs             = 64
         lr_limit_max    = 1e-3 if optimizer_type in ['adam', 'adamw'] else 5e-2
         lr_limit_min    = 3e-4 if optimizer_type in ['adam', 'adamw'] else 5e-4
-        # Init_lr_fit     = min(max(batch_size / nbs * Init_lr, lr_limit_min), lr_limit_max)
-        # Min_lr_fit      = min(max(batch_size / nbs * Min_lr, lr_limit_min * 1e-2), lr_limit_max * 1e-2)
-        Init_lr_fit     = Init_lr
-        Min_lr_fit      = Min_lr
+        Init_lr_fit     = min(max(batch_size / nbs * Init_lr, lr_limit_min), lr_limit_max)
+        Min_lr_fit      = min(max(batch_size / nbs * Min_lr, lr_limit_min * 1e-2), lr_limit_max * 1e-2)
 
         #---------------------------------------#
         #   根据optimizer_type选择优化器
