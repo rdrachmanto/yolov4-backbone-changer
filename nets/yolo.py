@@ -8,8 +8,7 @@ from nets.CSPdarknet import darknet53
 from .densenet import _Transition, densenet121, densenet169, densenet201
 from .ghostnet import ghostnet
 from .mobilenet_v1 import mobilenet_v1
-# from .mobilenet_v2 import mobilenet_v2, mobilenet_v2_half
-from .mobilenetv2 import mobilenetv2_6_05
+from .mobilenet_v2 import mobilenet_v2, mobilenet_v2_half
 from .mobilenet_v3 import mobilenet_v3
 from .resnet import resnet50
 from .vgg import vgg
@@ -36,28 +35,15 @@ class MobileNetV2(nn.Module):
         out5 = self.model.features[14:18](out4)
         return out3, out4, out5
     
-# class MobileNetV2_half(nn.Module):
-#     def __init__(self, pretrained = False):
-#         super(MobileNetV2_half, self).__init__()
-#         self.model = mobilenet_v2_half(pretrained=pretrained)
-
-#     def forward(self, x):
-#         out3 = self.model.features[:7](x)
-#         out4 = self.model.features[7:14](out3)
-#         out5 = self.model.features[14:18](out4)
-#         return out3, out4, out5
-    
 class MobileNetV2_half(nn.Module):
     def __init__(self, pretrained = False):
         super(MobileNetV2_half, self).__init__()
-        self.model = mobilenetv2_6_05(2, pretrained=pretrained)
+        self.model = mobilenet_v2_half(pretrained=pretrained)
 
     def forward(self, x):
-        conv1 = self.model.conv1(x)
-        out3 = self.model.blocks[:3](conv1)
-        out4 = self.model.blocks[3:5](out3)
-        pre_out5 = self.model.features[5:7](out4)
-        out5 = self.model.conv2(pre_out5)
+        out3 = self.model.features[:7](x)
+        out4 = self.model.features[7:14](out3)
+        out5 = self.model.features[14:18](out4)
         return out3, out4, out5
 
 
@@ -348,10 +334,6 @@ class YoloBody(nn.Module):
     def forward(self, x):
         #  backbone
         x2, x1, x0 = self.backbone(x)
-
-        print(x2.shape)
-        print(x1.shape)
-        print(x0.shape)
 
         # 13,13,1024 -> 13,13,512 -> 13,13,1024 -> 13,13,512 -> 13,13,2048 
         P5 = self.conv1(x0)
