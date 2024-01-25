@@ -480,8 +480,10 @@ if __name__ == "__main__":
         nbs             = 64
         lr_limit_max    = 1e-3 if optimizer_type in ['adam', 'adamw'] else 5e-2
         lr_limit_min    = 3e-4 if optimizer_type in ['adam', 'adamw'] else 5e-4
-        Init_lr_fit     = min(max(batch_size / nbs * Init_lr, lr_limit_min), lr_limit_max)
-        Min_lr_fit      = min(max(batch_size / nbs * Min_lr, lr_limit_min * 1e-2), lr_limit_max * 1e-2)
+        # Init_lr_fit     = min(max(batch_size / nbs * Init_lr, lr_limit_min), lr_limit_max)
+        # Min_lr_fit      = min(max(batch_size / nbs * Min_lr, lr_limit_min * 1e-2), lr_limit_max * 1e-2)
+        Init_lr_fit     = Init_lr
+        Min_lr_fit      = Min_lr
 
         #---------------------------------------#
         #   根据optimizer_type选择优化器
