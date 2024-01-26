@@ -87,12 +87,14 @@ if __name__ == "__main__":
     #   classes_path    指向model_data下的txt，与自己训练的数据集相关 
     #                   训练前一定要修改classes_path，使其对应自己的数据集
     #---------------------------------------------------------------------#
-    classes_path    = 'model_data/voc_classes.txt'
+    # classes_path    = 'model_data/voc_classes.txt'
+    classes_path    = 'model_data/oxfordhand_classes.txt'
     #---------------------------------------------------------------------#
     #   anchors_path    代表先验框对应的txt文件，一般不修改。
     #   anchors_mask    用于帮助代码找到对应的先验框，一般不修改。
     #---------------------------------------------------------------------#
-    anchors_path    = 'model_data/yolo_anchors.txt'
+    # anchors_path    = 'model_data/yolo_anchors.txt'
+    anchors_path    = 'model_data/oxfordhand_anchors.txt'
     anchors_mask    = [[6, 7, 8], [3, 4, 5], [0, 1, 2]]
     #----------------------------------------------------------------------------------------------------------------------------#
     #   权值文件的下载请看README，可以通过网盘下载。模型的 预训练权重 对不同数据集是通用的，因为特征是通用的。
@@ -300,8 +302,10 @@ if __name__ == "__main__":
     #   train_annotation_path   训练图片路径和标签
     #   val_annotation_path     验证图片路径和标签
     #------------------------------------------------------#
-    train_annotation_path   = '2007_train.txt'
-    val_annotation_path     = '2007_val.txt'
+    # train_annotation_path   = '2007_train.txt'
+    # val_annotation_path     = '2007_val.txt'
+    train_annotation_path   = 'oxfordhand_train.txt'
+    val_annotation_path     = 'oxfordhand_val.txt'
 
     seed_everything(seed)
     #------------------------------------------------------#
