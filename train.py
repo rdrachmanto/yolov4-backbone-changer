@@ -331,7 +331,8 @@ if __name__ == "__main__":
     #   创建yolo模型
     #------------------------------------------------------#
     if backbone == 'cspdarknet53':
-        model = YoloDarknetBody(anchors_mask, num_classes, backbone=backbone, pretrained = pretrained)
+        print(f'Creating Network using {backbone}')
+        model = YoloDarknetBody(anchors_mask, num_classes, pretrained = pretrained)
     else:
         model = YoloBody(anchors_mask, num_classes, backbone=backbone, pretrained = pretrained)
 

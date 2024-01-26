@@ -252,7 +252,7 @@ class YoloBody(nn.Module):
             #---------------------------------------------------#   
             #   52,52,32/2；26,26,92/2；13,13,320/2 -> 52,52,16；26,26,48；13,13,160
             #---------------------------------------------------#
-            self.backbone   = MobileNetV2(pretrained=pretrained)
+            self.backbone   = MobileNetV2_half(pretrained=pretrained)
             in_filters      = [16, 48, 160]
         elif backbone == "mobilenetv3":
             #---------------------------------------------------#   
