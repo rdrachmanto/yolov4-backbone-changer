@@ -4,14 +4,14 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from nets.CSPdarknet import darknet53
 from .densenet import _Transition, densenet121, densenet169, densenet201
 from .ghostnet import ghostnet
 from .mobilenet_v1 import mobilenet_v1
-from .mobilenet_v2 import mobilenet_v2, mobilenet_v2_half
+from .mobilenet_v2 import mobilenet_v2
 from .mobilenet_v3 import mobilenet_v3
 from .resnet import resnet50
 from .vgg import vgg
+
 
 class MobileNetV1(nn.Module):
     def __init__(self, pretrained = False):
@@ -34,18 +34,6 @@ class MobileNetV2(nn.Module):
         out4 = self.model.features[7:14](out3)
         out5 = self.model.features[14:18](out4)
         return out3, out4, out5
-    
-class MobileNetV2_half(nn.Module):
-    def __init__(self, pretrained = False):
-        super(MobileNetV2_half, self).__init__()
-        self.model = mobilenet_v2_half(pretrained=pretrained)
-
-    def forward(self, x):
-        out3 = self.model.features[:7](x)
-        out4 = self.model.features[7:14](out3)
-        out5 = self.model.features[14:18](out4)
-        return out3, out4, out5
-
 
 class MobileNetV3(nn.Module):
     def __init__(self, pretrained = False):
@@ -141,12 +129,12 @@ class ResNet(nn.Module):
         feat5   = self.model.layer4(feat4)
         return [feat3, feat4, feat5]
 
-def conv2d(filter_in, filter_out, kernel_size, stride=1):
+def conv2d(filter_in, filter_out, kernel_size, groups=1, stride=1):
     pad = (kernel_size - 1) // 2 if kernel_size else 0
     return nn.Sequential(OrderedDict([
-        ("conv", nn.Conv2d(filter_in, filter_out, kernel_size=kernel_size, stride=stride, padding=pad, bias=False)),
+        ("conv", nn.Conv2d(filter_in, filter_out, kernel_size=kernel_size, stride=stride, padding=pad, groups=groups, bias=False)),
         ("bn", nn.BatchNorm2d(filter_out)),
-        ("relu", nn.LeakyReLU(0.1)),
+        ("relu", nn.ReLU6(inplace=True)),
     ]))
 
 def conv_dw(filter_in, filter_out, stride = 1):
@@ -198,7 +186,7 @@ class Upsample(nn.Module):
 def make_three_conv(filters_list, in_filters):
     m = nn.Sequential(
         conv2d(in_filters, filters_list[0], 1),
-        conv2d(filters_list[0], filters_list[1], 3),
+        conv_dw(filters_list[0], filters_list[1]),
         conv2d(filters_list[1], filters_list[0], 1),
     )
     return m
@@ -209,9 +197,9 @@ def make_three_conv(filters_list, in_filters):
 def make_five_conv(filters_list, in_filters):
     m = nn.Sequential(
         conv2d(in_filters, filters_list[0], 1),
-        conv2d(filters_list[0], filters_list[1], 3),
+        conv_dw(filters_list[0], filters_list[1]),
         conv2d(filters_list[1], filters_list[0], 1),
-        conv2d(filters_list[0], filters_list[1], 3),
+        conv_dw(filters_list[0], filters_list[1]),
         conv2d(filters_list[1], filters_list[0], 1),
     )
     return m
@@ -221,34 +209,23 @@ def make_five_conv(filters_list, in_filters):
 #---------------------------------------------------#
 def yolo_head(filters_list, in_filters):
     m = nn.Sequential(
-        conv2d(in_filters, filters_list[0], 3),
+        conv_dw(in_filters, filters_list[0]),
+        
         nn.Conv2d(filters_list[0], filters_list[1], 1),
     )
     return m
 
+    
 #---------------------------------------------------#
 #   yolo_body
 #---------------------------------------------------#
 class YoloBody(nn.Module):
-    def __init__(self, anchors_mask, num_classes, backbone=None, pretrained = False):
+    def __init__(self, anchors_mask, num_classes, backbone="mobilenetv2", pretrained=False):
         super(YoloBody, self).__init__()
-
-        print("Creating network using Backbone: {}\n".format(backbone))
-
-        if backbone == "cspdarknet53":
-            #---------------------------------------------------#   
-            #   生成CSPdarknet53的主干模型
-            #   获得三个有效特征层，他们的shape分别是：
-            #   52,52,256
-            #   26,26,512
-            #   13,13,1024
-            #---------------------------------------------------#
-            self.backbone   = darknet53(pretrained)
-            in_filters = [256, 512, 1024]
         #---------------------------------------------------#   
         #   生成mobilnet的主干模型，获得三个有效特征层。
         #---------------------------------------------------#
-        elif backbone == "mobilenetv1":
+        if backbone == "mobilenetv1":
             #---------------------------------------------------#   
             #   52,52,256；26,26,512；13,13,1024
             #---------------------------------------------------#
@@ -260,12 +237,6 @@ class YoloBody(nn.Module):
             #---------------------------------------------------#
             self.backbone   = MobileNetV2(pretrained=pretrained)
             in_filters      = [32, 96, 320]
-        elif backbone == "mobilenetv2_half":
-            #---------------------------------------------------#   
-            #   52,52,32；26,26,92；13,13,320
-            #---------------------------------------------------#
-            self.backbone   = MobileNetV2_half(pretrained=pretrained)
-            in_filters      = [16, 48, 160]
         elif backbone == "mobilenetv3":
             #---------------------------------------------------#   
             #   52,52,40；26,26,112；13,13,160
@@ -301,7 +272,7 @@ class YoloBody(nn.Module):
             self.backbone   = ResNet(pretrained=pretrained)
             in_filters      = [512, 1024, 2048]
         else:
-            raise ValueError('Unsupported backbone - `{}`, Use cspdarknet53, mobilenetv1, mobilenetv2, mobilenetv3, ghostnet, vgg, densenet121, densenet169, densenet201, resnet50.'.format(backbone))
+            raise ValueError('Unsupported backbone - `{}`, Use mobilenetv1, mobilenetv2, mobilenetv3, ghostnet, vgg, densenet121, densenet169, densenet201, resnet50.'.format(backbone))
 
         self.conv1           = make_three_conv([512, 1024], in_filters[2])
         self.SPP             = SpatialPyramidPooling()
@@ -390,4 +361,3 @@ class YoloBody(nn.Module):
         out0 = self.yolo_head1(P5)
 
         return out0, out1, out2
-

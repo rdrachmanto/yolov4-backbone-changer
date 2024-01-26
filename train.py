@@ -15,6 +15,7 @@ import torch.optim as optim
 from torch import nn
 from torch.utils.data import DataLoader
 
+from nets.yolo_darknet import YoloDarknetBody
 from nets.yolo import YoloBody
 from nets.yolo_training import (YOLOLoss, get_lr_scheduler, set_optimizer_lr,
                                 weights_init)
@@ -270,7 +271,7 @@ if __name__ == "__main__":
     #------------------------------------------------------------------#
     #   save_period     多少个epoch保存一次权值
     #------------------------------------------------------------------#
-    save_period         = 10
+    save_period         = 1
     #------------------------------------------------------------------#
     #   save_dir        权值与日志文件保存的文件夹
     #------------------------------------------------------------------#
@@ -329,7 +330,10 @@ if __name__ == "__main__":
     #------------------------------------------------------#
     #   创建yolo模型
     #------------------------------------------------------#
-    model = YoloBody(anchors_mask, num_classes, backbone=backbone, pretrained = pretrained)
+    if backbone == 'cspdarknet53':
+        model = YoloDarknetBody(anchors_mask, num_classes, backbone=backbone, pretrained = pretrained)
+    else:
+        model = YoloBody(anchors_mask, num_classes, backbone=backbone, pretrained = pretrained)
 
     if args.resume and args.checkpoint_path:
         print('Resume Train')

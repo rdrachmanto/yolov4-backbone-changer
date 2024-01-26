@@ -5,7 +5,7 @@ import torch
 from thop import clever_format, profile
 from torchsummary import summary
 
-from nets.yolo import YoloBody
+from nets.yolo_darknet import YoloBody
 
 if __name__ == "__main__":
     input_shape     = [416, 416]

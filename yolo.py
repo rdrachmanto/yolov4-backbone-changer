@@ -8,7 +8,7 @@ import torch.nn as nn
 import cv2
 from PIL import ImageDraw, ImageFont, Image
 
-from nets.yolo import YoloBody
+from nets.yolo_darknet import YoloBody
 from utils.utils import (cvtColor, get_anchors, get_classes, preprocess_input,
                          resize_image, show_config)
 from utils.utils_bbox import DecodeBox, DecodeBoxNP
