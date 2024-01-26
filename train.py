@@ -485,10 +485,7 @@ if __name__ == "__main__":
         #-------------------------------------------------------------------#
         #   判断当前batch_size，自适应调整学习率
         #-------------------------------------------------------------------#
-        # nbs             = 64
-        nbs               = batch_size
-        # lr_limit_max    = 1e-3 if optimizer_type in ['adam', 'adamw'] else 5e-2
-        # lr_limit_min    = 3e-4 if optimizer_type in ['adam', 'adamw'] else 5e-4
+        nbs             = 64
         lr_limit_max    = 1e-3 if optimizer_type in ['adam', 'adamw'] else 5e-2
         lr_limit_min    = 3e-4 if optimizer_type in ['adam', 'adamw'] else 5e-4
         Init_lr_fit     = min(max(batch_size / nbs * Init_lr, lr_limit_min), lr_limit_max)
