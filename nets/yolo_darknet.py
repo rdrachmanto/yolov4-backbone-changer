@@ -86,6 +86,8 @@ def yolo_head(filters_list, in_filters):
 class YoloDarknetBody(nn.Module):
     def __init__(self, anchors_mask, num_classes, pretrained = False):
         super(YoloDarknetBody, self).__init__()
+
+        print(f'Creating Network using backbone: cspdarknet53\n')
         #---------------------------------------------------#   
         #   生成CSPdarknet53的主干模型
         #   获得三个有效特征层，他们的shape分别是：
