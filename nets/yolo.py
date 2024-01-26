@@ -289,7 +289,7 @@ class YoloBody(nn.Module):
             self.backbone   = ResNet(pretrained=pretrained)
             in_filters      = [512, 1024, 2048]
         else:
-            raise ValueError('Unsupported backbone - `{}`, Use mobilenetv1, mobilenetv2, mobilenetv3, ghostnet, vgg, densenet121, densenet169, densenet201, resnet50.'.format(backbone))
+            raise ValueError('Unsupported backbone - `{}`, Use mobilenetv1, mobilenetv2, mobilenetv2_half, mobilenetv3, ghostnet, vgg, densenet121, densenet169, densenet201, resnet50.'.format(backbone))
 
         self.conv1           = make_three_conv([512, 1024], in_filters[2])
         self.SPP             = SpatialPyramidPooling()
