@@ -302,10 +302,8 @@ if __name__ == "__main__":
     #   train_annotation_path   训练图片路径和标签
     #   val_annotation_path     验证图片路径和标签
     #------------------------------------------------------#
-    # train_annotation_path   = '2007_train.txt'
-    # val_annotation_path     = '2007_val.txt'
-    train_annotation_path   = 'oxfordhand_train.txt'
-    val_annotation_path     = 'oxfordhand_val.txt'
+    train_annotation_path   = '2007_train.txt'
+    val_annotation_path     = '2007_val.txt'
 
     seed_everything(seed)
     #------------------------------------------------------#
