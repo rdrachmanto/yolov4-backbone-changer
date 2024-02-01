@@ -96,7 +96,7 @@ class LossHistory():
     def loss_plot(self):
         iters = range(len(self.losses))
 
-        plt.figure(figsize=(30, 5))
+        plt.figure(figsize=(15, 5))
         plt.plot(iters, self.losses, 'red', linewidth = 2, label='train loss')
         plt.plot(iters, self.val_loss, 'coral', linewidth = 2, label='val loss')
         try:
@@ -292,7 +292,7 @@ class EvalCallback():
                 # f.write(str(temp_map))
                 # f.write("\n")
             
-            plt.figure(figsize=(30, 5))
+            plt.figure(figsize=(15, 5))
             plt.plot(self.epoch_map_dict['epoch'], self.epoch_map_dict['map'], 'red', linewidth = 2, label='train map')
             # plt.plot(self.epoches, self.maps, 'red', linewidth = 2, label='train map')
 
