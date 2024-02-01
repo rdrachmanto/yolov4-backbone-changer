@@ -7,7 +7,7 @@ import matplotlib
 matplotlib.use('Agg')
 import scipy.signal
 from matplotlib import pyplot as plt
-# from torch.utils.tensorboard import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 import shutil
 import numpy as np
@@ -28,7 +28,7 @@ class LossHistory():
         self.loaded     = False
         
         os.makedirs(self.log_dir, exist_ok=True)
-        # self.writer     = SummaryWriter(self.log_dir)
+        self.writer     = SummaryWriter(self.log_dir)
         try:
             dummy_input     = torch.randn(2, 3, input_shape[0], input_shape[1])
             self.writer.add_graph(model, dummy_input)
