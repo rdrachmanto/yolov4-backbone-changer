@@ -292,7 +292,7 @@ class EvalCallback():
                 # f.write(str(temp_map))
                 # f.write("\n")
             
-            plt.figure()
+            plt.figure(40, 15)
             plt.plot(self.epoch_map_dict['epoch'], self.epoch_map_dict['map'], 'red', linewidth = 2, label='train map')
             # plt.plot(self.epoches, self.maps, 'red', linewidth = 2, label='train map')
 
