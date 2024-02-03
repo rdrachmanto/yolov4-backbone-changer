@@ -2,18 +2,30 @@
 #   该部分代码用于看网络结构
 #--------------------------------------------#
 import torch
+import argsparse
 from thop import clever_format, profile
 from torchsummary import summary
 
-from nets.yolo_darknet import YoloBody
+from nets.yolo_darknet import YoloDarknetBody
+from nets.yolo import YoloBody
 
 if __name__ == "__main__":
+    parser = argsparse.ArgumentParser()
+
+    parser.add_argument('--backbone', type=str, default=None, help='backbone for yolo')
+
+    args = parser.parse_args()
+
     input_shape     = [416, 416]
     anchors_mask    = [[6, 7, 8], [3, 4, 5], [0, 1, 2]]
     num_classes     = 80
     
     device  = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    m       = YoloBody(anchors_mask, num_classes).to(device)
+
+    if args.backbone == 'cspdarknet53':
+        m = YoloDarknetBody(anchors_mask, num_classes).to(device)
+    else:
+        m = YoloBody(anchors_mask, num_classes, backbone=args.backbone).to(device)
     summary(m, (3, input_shape[0], input_shape[1]))
     
     dummy_input     = torch.randn(1, 3, input_shape[0], input_shape[1]).to(device)
