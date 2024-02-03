@@ -37,6 +37,6 @@ if __name__ == "__main__":
     #   本代码选择乘2，参考YOLOX。
     #--------------------------------------------------------#
     flops           = flops * 2
-    flops, params   = clever_format([flops, params], "%.3f")
+    flops, params   = clever_format([flops, params], "%.6f")
     print('Total GFLOPS: %s' % (flops))
     print('Total params: %s' % (params))
