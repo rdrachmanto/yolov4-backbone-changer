@@ -10,7 +10,7 @@ from nets.yolo_darknet import YoloDarknetBody
 from nets.yolo import YoloBody
 
 if __name__ == "__main__":
-    parser = argsparse.ArgumentParser()
+    parser = argparse.ArgumentParser()
 
     parser.add_argument('--backbone', type=str, default=None, help='backbone for yolo')
 
