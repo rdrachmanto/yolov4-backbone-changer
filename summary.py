@@ -2,7 +2,7 @@
 #   该部分代码用于看网络结构
 #--------------------------------------------#
 import torch
-import argsparse
+import argparse
 from thop import clever_format, profile
 from torchsummary import summary
 
