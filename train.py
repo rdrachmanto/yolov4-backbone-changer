@@ -49,7 +49,7 @@ if __name__ == "__main__":
     parser.add_argument('--resume', action='store_true', help='resume training dari checkpoint terakhir')
     parser.add_argument('--checkpoint_path', type=str, default=None, help='path file checkpoint jika ingin resume training')
 
-    parser.add_argument('--trial', type=int, default=1, help='id eksperimen')
+    parser.add_argument('--note', type=str, default='None', help='note')
 
     args = parser.parse_args()
     #---------------------------------#
@@ -88,13 +88,13 @@ if __name__ == "__main__":
     #                   训练前一定要修改classes_path，使其对应自己的数据集
     #---------------------------------------------------------------------#
     # classes_path    = 'model_data/voc_classes.txt'
-    classes_path    = 'model_data/rsd_classes.txt'
+    classes_path    = 'model_data/clp_classes.txt'
     #---------------------------------------------------------------------#
     #   anchors_path    代表先验框对应的txt文件，一般不修改。
     #   anchors_mask    用于帮助代码找到对应的先验框，一般不修改。
     #---------------------------------------------------------------------#
     # anchors_path    = 'model_data/yolo_anchors.txt'
-    anchors_path    = 'model_data/rsd_anchors.txt'
+    anchors_path    = 'model_data/clp_anchors.txt'
     anchors_mask    = [[6, 7, 8], [3, 4, 5], [0, 1, 2]]
     #----------------------------------------------------------------------------------------------------------------------------#
     #   权值文件的下载请看README，可以通过网盘下载。模型的 预训练权重 对不同数据集是通用的，因为特征是通用的。
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     #      可以设置mosaic=True，直接随机初始化参数开始训练，但得到的效果仍然不如有预训练的情况。（像COCO这样的大数据集可以这样做）
     #   2、了解imagenet数据集，首先训练分类模型，获得网络的主干部分权值，分类模型的 主干部分 和该模型通用，基于此进行训练。
     #----------------------------------------------------------------------------------------------------------------------------#
-    model_path      = ''
+    model_path      = 'model_data/backbones/mobilenetv2half_cifar100_backbone_CRD.pth'
     #------------------------------------------------------#
     #   input_shape     输入的shape大小，一定要是32的倍数
     #------------------------------------------------------#
@@ -215,7 +215,7 @@ if __name__ == "__main__":
     #                       (当Freeze_Train=False时失效)
     #------------------------------------------------------------------#
     Init_Epoch          = 0
-    Freeze_Epoch        = 50
+    Freeze_Epoch        = 600
     Freeze_batch_size   = 8
     #------------------------------------------------------------------#
     #   解冻阶段训练参数
@@ -226,13 +226,13 @@ if __name__ == "__main__":
     #                           Adam可以使用相对较小的UnFreeze_Epoch
     #   Unfreeze_batch_size     模型在解冻后的batch_size
     #------------------------------------------------------------------#
-    UnFreeze_Epoch      = 600
+    UnFreeze_Epoch      = 1200
     Unfreeze_batch_size = 8
     #------------------------------------------------------------------#
     #   Freeze_Train    是否进行冻结训练
     #                   默认先冻结主干训练后解冻训练。
     #------------------------------------------------------------------#
-    Freeze_Train        = False
+    Freeze_Train        = True
     
     #------------------------------------------------------------------#
     #   其它训练参数：学习率、优化器、学习率下降有关
@@ -273,12 +273,12 @@ if __name__ == "__main__":
     #------------------------------------------------------------------#
     #   save_period     多少个epoch保存一次权值
     #------------------------------------------------------------------#
-    save_period         = 20
+    save_period         = 300
     #------------------------------------------------------------------#
     #   save_dir        权值与日志文件保存的文件夹
     #------------------------------------------------------------------#
     callback_dir        = 'logs'
-    folder_name         = 'experiment_{}_backbone_{}'.format(args.trial, args.backbone)
+    folder_name         = 'yolov4_{}_{}'.format(args.backbone, args.note)
     save_dir            = os.path.join(callback_dir, folder_name)
     #------------------------------------------------------------------#
     #   eval_flag       是否在训练时进行评估，评估对象为验证集
