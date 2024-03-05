@@ -99,4 +99,6 @@ if __name__ == "__main__":
                                     worker_init_fn=partial(worker_init_fn, rank=rank, seed=seed))
 
     model.eval()
-    outputs = model(gen_val)
+    for iteration, batch in enumerate(gen_val):
+        images, targets = batch[0], batch[1]
+        outputs = model(images)
