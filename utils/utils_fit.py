@@ -64,7 +64,7 @@ def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, op
 
                 end_batch_train_time = time.time()
                 batch_train_time = end_batch_train_time - start_batch_train_time
-                batch_train_time_list.append(batch_train_time)
+                batch_train_time_list.append(batch_train_time_list)
 
                 loss_value_all  = 0
                 #----------------------#
@@ -125,7 +125,7 @@ def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, op
 
             end_batch_val_time = time.time()
             batch_val_time = end_batch_val_time - start_batch_val_time
-            batch_val_time_list.append(batch_val_time)
+            batch_val_time_list.append(batch_val_time_list)
 
             loss_value_all  = 0
             #----------------------#
