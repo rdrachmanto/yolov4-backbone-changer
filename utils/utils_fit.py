@@ -1,4 +1,5 @@
 import os
+import time
 
 import torch
 from tqdm import tqdm
@@ -92,6 +93,7 @@ def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, op
             break
         images, targets = batch[0], batch[1]
         with torch.no_grad():
+            start_time = time.time()
             if cuda:
                 images  = images.cuda(local_rank)
                 targets = [ann.cuda(local_rank) for ann in targets]
@@ -103,6 +105,8 @@ def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, op
             #   前向传播
             #----------------------#
             outputs         = model_train(images)
+            end_time = time.time()
+            inference_time = end_time - start_time
 
             loss_value_all  = 0
             #----------------------#
@@ -121,6 +125,7 @@ def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, op
     if local_rank == 0:
         pbar.close()
         print('Finish Validation')
+        print("Inference time: {:.5f}".format(inference_time))
         loss_history.append_loss(epoch + 1, loss / epoch_step, val_loss / epoch_step_val)
         eval_callback.on_epoch_end(epoch + 1, model_train)
         print('Epoch:'+ str(epoch + 1) + '/' + str(Epoch))
