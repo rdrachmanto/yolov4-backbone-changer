@@ -19,7 +19,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--backbone', type=str, default=None, help='backbone for yolo')
-    parser.add_argument('--model_path', type=str, default=None, help='model path')
+    parser.add_argument('--model_path', type=str, default='', help='model path')
 
     args = parser.parse_args()
 
