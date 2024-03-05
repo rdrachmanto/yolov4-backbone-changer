@@ -1,4 +1,5 @@
 import argparse
+import time
 import numpy as np
 import torch
 from functools import partial
@@ -99,8 +100,11 @@ if __name__ == "__main__":
                                     worker_init_fn=partial(worker_init_fn, rank=rank, seed=seed))
 
     model.eval()
+    start = time.time()
     for iteration, batch in enumerate(gen_val):
-        images = [image.to('cuda') for image in batch[0]]
-        targets = [target.to('cuda') for target in batch[1]]
-            
+        images, targets = batch[0], batch[1]
         outputs = model(images)
+
+    end = time.time()
+
+    print(end-start)
