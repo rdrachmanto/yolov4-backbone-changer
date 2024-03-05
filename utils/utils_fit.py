@@ -106,7 +106,7 @@ def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, op
             #----------------------#
             outputs         = model_train(images)
             end_time = time.time()
-            validation_time = end_time - start_time
+            validation_time = (end_time - start_time) * 1000
 
             loss_value_all  = 0
             #----------------------#
