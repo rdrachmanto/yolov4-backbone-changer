@@ -39,7 +39,7 @@ if __name__ == "__main__":
     anchors_mask    = [[6, 7, 8], [3, 4, 5], [0, 1, 2]]
     input_shape     = [416, 416]
     batch_size = 8
-    num_worker = 4
+    num_workers = 4
 
     device          = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     local_rank      = 0
@@ -94,10 +94,10 @@ if __name__ == "__main__":
     val_dataset     = YoloDataset(val_lines, input_shape, num_classes, epoch_length = 600, \
                                         mosaic=False, mixup=False, mosaic_prob=0, mixup_prob=0, train=False, special_aug_ratio=0)
     
-    gen_val         = DataLoader(val_dataset  , shuffle = shuffle, batch_size = batch_size, num_workers = num_workers, pin_memory=True, 
+    gen_val         = DataLoader(val_dataset, shuffle = shuffle, batch_size = batch_size, num_workers = num_workers, pin_memory=True, 
                                     drop_last=True, collate_fn=yolo_dataset_collate, sampler=val_sampler, 
                                     worker_init_fn=partial(worker_init_fn, rank=rank, seed=seed))
     
-    if local_rank == 0:
-            eval_callback   = EvalCallback(model, input_shape, anchors, anchors_mask, class_names, num_classes, val_lines, log_dir, Cuda, \
-                                            eval_flag=eval_flag, period=eval_period)
+    print(gen_val)
+    # model.eval()
+    # outputs = model(gen_val)
