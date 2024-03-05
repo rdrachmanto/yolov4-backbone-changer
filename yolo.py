@@ -17,7 +17,7 @@ import argparse
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--backbone', type=str, default=None, help='backbone for yolo')
+parser.add_argument('--backbone', type=str, default='mobilenetv2_half', help='backbone for yolo')
 args = parser.parse_args()
 
 '''
