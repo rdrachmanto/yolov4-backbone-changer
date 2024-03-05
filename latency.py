@@ -102,7 +102,7 @@ if __name__ == "__main__":
     model.eval()
     start = time.time()
     for iteration, batch in enumerate(gen_val):
-        with torch.inference_mode:
+        with torch.inference_mode():
             images, targets = batch[0], batch[1]
             outputs = model(images)
 
