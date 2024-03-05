@@ -56,7 +56,7 @@ if __name__ == "__main__":
     #   Cuda    是否使用Cuda
     #           没有GPU可以设置成False
     #---------------------------------#
-    Cuda = False
+    Cuda = True
     #----------------------------------------------#
     #   Seed    用于固定随机种子
     #           使得每次独立训练都可以获得一样的结果
@@ -421,7 +421,7 @@ if __name__ == "__main__":
             model_train = model_train.cuda(local_rank)
             model_train = torch.nn.parallel.DistributedDataParallel(model_train, device_ids=[local_rank], find_unused_parameters=True)
         else:
-            model_train = torch.nn.DataParallel(model)
+            # model_train = torch.nn.DataParallel(model)
             cudnn.benchmark = True
             model_train = model_train.cuda()
 
