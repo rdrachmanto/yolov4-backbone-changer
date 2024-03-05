@@ -85,7 +85,7 @@ def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, op
         pbar.close()
         print('Finish Train')
         print('Start Validation')
-        pbar = tqdm(total=epoch_step_val, desc=f'Epoch {epoch + 1}/{Epoch}',postfix=dict,mininterval=0.3)
+        # pbar = tqdm(total=epoch_step_val, desc=f'Epoch {epoch + 1}/{Epoch}',postfix=dict,mininterval=0.3)
 
     model_train.eval()
     for iteration, batch in enumerate(gen_val):
