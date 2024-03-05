@@ -307,5 +307,4 @@ class EvalCallback():
             plt.close("all")
 
             print("Get map done.")
-            print(f"Inference time: {inference_time} s")
             shutil.rmtree(self.map_out_path)
