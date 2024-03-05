@@ -422,8 +422,9 @@ if __name__ == "__main__":
             model_train = torch.nn.parallel.DistributedDataParallel(model_train, device_ids=[local_rank], find_unused_parameters=True)
         else:
             model_train = torch.nn.DataParallel(model)
+            model_train = model.module
             cudnn.benchmark = True
-            model_train = model_train.cuda(local_rank)
+            model_train = model_train.cuda()
 
     #---------------------------#
     #   读取数据集对应的txt
