@@ -99,6 +99,7 @@ if __name__ == "__main__":
                                     drop_last=True, collate_fn=yolo_dataset_collate, sampler=val_sampler, 
                                     worker_init_fn=partial(worker_init_fn, rank=rank, seed=seed))
 
+    model.to('cuda')
     model.eval()
     start = time.time()
     for iteration, batch in enumerate(gen_val):
