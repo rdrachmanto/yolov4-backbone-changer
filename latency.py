@@ -38,7 +38,7 @@ if __name__ == "__main__":
     anchors_path    = 'model_data/clp_anchors.txt'
     anchors_mask    = [[6, 7, 8], [3, 4, 5], [0, 1, 2]]
     input_shape     = [416, 416]
-    batch_size = 8
+    batch_size = 1
     num_workers = 4
 
     device          = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
