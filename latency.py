@@ -100,5 +100,5 @@ if __name__ == "__main__":
 
     model.eval()
     for iteration, batch in enumerate(gen_val):
-        images, targets = batch[0], batch[1]
+        images, targets = batch[0].device('cuda'), batch[1].device('cuda')
         outputs = model(images)
