@@ -100,7 +100,10 @@ if __name__ == "__main__":
 
     model.eval()
     for iteration, batch in enumerate(gen_val):
-        images = batch[0].to('cuda')
-        targets = batch[1].to('cuda')
-        outputs = model(images)
+        images = [image.to('cuda') for image in batch[0]]
+        targets = [target.to('cuda') for target in batch[1]]
 
+        if isinstance(targets[0], list):
+            targets = [torch.stack(target) for target in targets]
+            
+        outputs = model(images)
