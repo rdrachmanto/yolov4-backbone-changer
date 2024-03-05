@@ -97,17 +97,6 @@ if __name__ == "__main__":
     gen_val         = DataLoader(val_dataset, shuffle = shuffle, batch_size = batch_size, num_workers = num_workers, pin_memory=True, 
                                     drop_last=True, collate_fn=yolo_dataset_collate, sampler=val_sampler, 
                                     worker_init_fn=partial(worker_init_fn, rank=rank, seed=seed))
-    
-    print(gen_val)
-    num_batches = len(gen_val)
-    print("Jumlah batch:", num_batches)
-    # Mengakses batch pertama
-    first_batch = next(iter(gen_val))
 
-    # Menghitung jumlah data dalam satu batch
-    num_data_in_batch = len(first_batch[0])
-    print("Jumlah data dalam satu batch:", num_data_in_batch)
-
-
-    # model.eval()
-    # outputs = model(gen_val)
+    model.eval()
+    outputs = model(gen_val)
