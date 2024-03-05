@@ -37,7 +37,7 @@ def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, op
             #   前向传播
             #----------------------#
             start_batch_train_time = time.time()
-            
+
             outputs         = model_train(images)
 
             end_batch_train_time = time.time()
@@ -97,7 +97,7 @@ def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, op
     if local_rank == 0:
         pbar.close()
         print('Finish Train')
-        print("Train time per batch: {:.4f} ms | {:.4f} s".format((sum(batch_train_time_list) / len(batch_train_time_list)) * 1000, sum(batch_train_time_list) / len(batch_train_time_list)))
+        print("Avg train time per batch: {:.4f} ms | {:.4f} s".format((sum(batch_train_time_list) / len(batch_train_time_list)) * 1000, sum(batch_train_time_list) / len(batch_train_time_list)))
         print("Train time per epoch: {:.4f} ms | {:.4f} s".format(epoch_train_time * 1000, epoch_train_time))
         print('Start Validation')
         pbar = tqdm(total=epoch_step_val, desc=f'Epoch {epoch + 1}/{Epoch}',postfix=dict,mininterval=0.3)
@@ -147,7 +147,7 @@ def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, op
     if local_rank == 0:
         pbar.close()
         print('Finish Validation')
-        print("Validation time per batch: {:.4f} ms | {:.4f} s".format((sum(batch_val_time_list) / len(batch_val_time_list)) * 1000, sum(batch_val_time_list) / len(batch_val_time_list)))
+        print("Avg validation time per batch: {:.4f} ms | {:.4f} s".format((sum(batch_val_time_list) / len(batch_val_time_list)) * 1000, sum(batch_val_time_list) / len(batch_val_time_list)))
         print("Validation time per epoch: {:.4f} ms | {:.4f} s".format(validation_time * 1000, validation_time))
         loss_history.append_loss(epoch + 1, loss / epoch_step, val_loss / epoch_step_val)
         eval_callback.on_epoch_end(epoch + 1, model_train)
