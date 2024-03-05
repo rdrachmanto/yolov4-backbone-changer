@@ -81,8 +81,8 @@ if __name__ == "__main__":
         if local_rank == 0:
             print("\nSuccessful Load Key:", str(load_key)[:500], "……\nSuccessful Load Key Num:", len(load_key))
             print("\nFail To Load Key:", str(no_load_key)[:500], "……\nFail To Load Key num:", len(no_load_key))
-    else:
-        raise ValueError('Please set the model path!')
+    # else:
+    #     raise ValueError('Please set the model path!')
     
     yolo_loss    = YOLOLoss(anchors, num_classes, input_shape, Cuda, anchors_mask, label_smoothing, focal_loss, focal_alpha, focal_gamma, iou_type)
 
