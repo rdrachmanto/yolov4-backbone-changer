@@ -1,6 +1,7 @@
 import datetime
 import os
 import re
+import time
 
 import torch
 import matplotlib
@@ -280,7 +281,10 @@ class EvalCallback():
             #     temp_map = get_coco_map(class_names = self.class_names, path = self.map_out_path)[1]
             # except:
             #     temp_map = get_map(self.MINOVERLAP, False, path = self.map_out_path)
+            start_time = time.time()
             temp_map = get_map(self.MINOVERLAP, False, path = self.map_out_path)
+            end_time = time.time()
+            inference_time = end_time - start_time
 
             # self.maps.append(temp_map)
             # self.epoches.append(epoch)
@@ -307,4 +311,5 @@ class EvalCallback():
             plt.close("all")
 
             print("Get map done.")
+            print(f"Inference time: {inference_time} s")
             shutil.rmtree(self.map_out_path)
