@@ -8,10 +8,17 @@ import torch.nn as nn
 import cv2
 from PIL import ImageDraw, ImageFont, Image
 
-from nets.yolo_darknet import YoloBody
+from nets.yolo_darknet import YoloDarknetBody
+from nets.yolo import YoloBody
 from utils.utils import (cvtColor, get_anchors, get_classes, preprocess_input,
                          resize_image, show_config)
 from utils.utils_bbox import DecodeBox, DecodeBoxNP
+import argparse
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--backbone', type=str, default=None, help='backbone for yolo')
+args = parser.parse_args()
 
 '''
 训练自己的数据集必看注释！
@@ -26,13 +33,13 @@ class YOLO(object):
         #   验证集损失较低不代表mAP较高，仅代表该权值在验证集上泛化性能较好。
         #   如果出现shape不匹配，同时要注意训练时的model_path和classes_path参数的修改
         #--------------------------------------------------------------------------#
-        "model_path"        : 'model_data/yolo4_weights.pth',
-        "classes_path"      : 'model_data/coco_classes.txt',
+        "model_path"        : 'logs/yolov4_mobilenetv2_half_[Car_License_Plate_Detection]CRD/ep1200-loss0.039-val_loss0.037.pth',
+        "classes_path"      : 'model_data/clp_classes.txt',
         #---------------------------------------------------------------------#
         #   anchors_path代表先验框对应的txt文件，一般不修改。
         #   anchors_mask用于帮助代码找到对应的先验框，一般不修改。
         #---------------------------------------------------------------------#
-        "anchors_path"      : 'model_data/yolo_anchors.txt',
+        "anchors_path"      : 'model_data/clp_anchors.txt',
         "anchors_mask"      : [[6, 7, 8], [3, 4, 5], [0, 1, 2]],
         #---------------------------------------------------------------------#
         #   输入图片的大小，必须为32的倍数。
@@ -98,7 +105,11 @@ class YOLO(object):
         #---------------------------------------------------#
         #   建立yolo模型，载入yolo模型的权重
         #---------------------------------------------------#
-        self.net    = YoloBody(self.anchors_mask, self.num_classes)
+        if args.backbone == 'cspdarknet53':
+            self.net = YoloDarknetBody(self.anchors_mask, self.num_classes)
+        else:
+            self.net = YoloBody(self.anchors_mask, self.num_classes, backbone=args.backbone)
+        # self.net    = YoloBody(self.anchors_mask, self.num_classes)
         device      = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.net.load_state_dict(torch.load(self.model_path, map_location=device))
         self.net    = self.net.eval()
