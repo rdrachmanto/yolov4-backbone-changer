@@ -11,11 +11,14 @@ def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, op
     loss        = 0
     val_loss    = 0
 
+    batch_train_time_list = []
+    batch_val_time_list = []
+
     if local_rank == 0:
         print('\nStart Train')
         pbar = tqdm(total=epoch_step,desc=f'Epoch {epoch + 1}/{Epoch}',postfix=dict,mininterval=0.3)
     model_train.train()
-    start_train_time = time.time()
+    start_epoch_train_time = time.time()
     for iteration, batch in enumerate(gen):
         if iteration >= epoch_step:
             break
@@ -55,7 +58,13 @@ def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, op
                 #----------------------#
                 #   前向传播
                 #----------------------#
+                start_batch_train_time = time.time()
+
                 outputs         = model_train(images)
+
+                end_batch_train_time = time.time()
+                batch_train_time = end_batch_train_time - start_batch_train_time
+                batch_train_time_list.append(batch_train_time)
 
                 loss_value_all  = 0
                 #----------------------#
@@ -82,13 +91,14 @@ def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, op
                                 'lr'    : get_lr(optimizer)})
             pbar.update(1)
 
-    end_train_time = time.time()
-    train_time = end_train_time - start_train_time
+    end_epoch_train_time = time.time()
+    epoch_train_time = end_epoch_train_time - start_epoch_train_time
 
     if local_rank == 0:
         pbar.close()
         print('Finish Train')
-        print("Train time: {:.2f} ms | {:.2f} s".format(train_time * 1000, train_time))
+        print("Train time per batch: {:.4f} ms | {:.4f} s".format((sum(batch_train_time_list) / len(batch_train_time_list)) * 1000, sum(batch_train_time_list) / len(batch_train_time_list)))
+        print("Train time per epoch: {:.4f} ms | {:.4f} s".format(epoch_train_time * 1000, epoch_train_time))
         print('Start Validation')
         pbar = tqdm(total=epoch_step_val, desc=f'Epoch {epoch + 1}/{Epoch}',postfix=dict,mininterval=0.3)
 
@@ -109,7 +119,13 @@ def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, op
             #----------------------#
             #   前向传播
             #----------------------#
+            start_batch_val_time = time.time()
+
             outputs         = model_train(images)
+
+            end_batch_val_time = time.time()
+            batch_val_time = end_batch_val_time - start_batch_val_time
+            batch_val_time_list.append(batch_val_time)
 
             loss_value_all  = 0
             #----------------------#
@@ -131,7 +147,8 @@ def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, op
     if local_rank == 0:
         pbar.close()
         print('Finish Validation')
-        print("Validation time: {:.2f} ms | {:.2f} s".format(validation_time * 1000, validation_time))
+        print("Validation time per batch: {:.4f} ms | {:.4f} s".format((sum(batch_val_time_list) / len(batch_val_time_list)) * 1000, sum(batch_val_time_list) / len(batch_val_time_list)))
+        print("Validation time per epoch: {:.4f} ms | {:.4f} s".format(validation_time * 1000, validation_time))
         loss_history.append_loss(epoch + 1, loss / epoch_step, val_loss / epoch_step_val)
         eval_callback.on_epoch_end(epoch + 1, model_train)
         print('Epoch:'+ str(epoch + 1) + '/' + str(Epoch))
