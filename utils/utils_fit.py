@@ -32,7 +32,10 @@ def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, op
             #----------------------#
             #   前向传播
             #----------------------#
+            start_train_time = time.time()
             outputs         = model_train(images)
+            end_train_time = time.time()
+            train_time = (end_train_time - start_train_time) * 1000
 
             loss_value_all  = 0
             #----------------------#
@@ -84,8 +87,9 @@ def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, op
     if local_rank == 0:
         pbar.close()
         print('Finish Train')
+        print("Train time: {:.2f} ms".format(train_time))
         print('Start Validation')
-        # pbar = tqdm(total=epoch_step_val, desc=f'Epoch {epoch + 1}/{Epoch}',postfix=dict,mininterval=0.3)
+        pbar = tqdm(total=epoch_step_val, desc=f'Epoch {epoch + 1}/{Epoch}',postfix=dict,mininterval=0.3)
 
     model_train.eval()
     for iteration, batch in enumerate(gen_val):
@@ -103,10 +107,10 @@ def fit_one_epoch(model_train, model, yolo_loss, loss_history, eval_callback, op
             #----------------------#
             #   前向传播
             #----------------------#
-            start_time = time.time()
+            start_val_time = time.time()
             outputs         = model_train(images)
-            end_time = time.time()
-            validation_time = (end_time - start_time) * 1000
+            end_val_time = time.time()
+            validation_time = (end_val_time - start_val_time) * 1000
 
             loss_value_all  = 0
             #----------------------#
