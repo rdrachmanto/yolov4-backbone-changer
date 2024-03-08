@@ -88,13 +88,13 @@ if __name__ == "__main__":
     #                   训练前一定要修改classes_path，使其对应自己的数据集
     #---------------------------------------------------------------------#
     # classes_path    = 'model_data/voc_classes.txt'
-    classes_path    = 'model_data/rsd_classes.txt'
+    classes_path    = 'model_data/clp_classes.txt'
     #---------------------------------------------------------------------#
     #   anchors_path    代表先验框对应的txt文件，一般不修改。
     #   anchors_mask    用于帮助代码找到对应的先验框，一般不修改。
     #---------------------------------------------------------------------#
     # anchors_path    = 'model_data/yolo_anchors.txt'
-    anchors_path    = 'model_data/rsd_anchors.txt'
+    anchors_path    = 'model_data/clp_anchors.txt'
     anchors_mask    = [[6, 7, 8], [3, 4, 5], [0, 1, 2]]
     #----------------------------------------------------------------------------------------------------------------------------#
     #   权值文件的下载请看README，可以通过网盘下载。模型的 预训练权重 对不同数据集是通用的，因为特征是通用的。
@@ -215,7 +215,7 @@ if __name__ == "__main__":
     #                       (当Freeze_Train=False时失效)
     #------------------------------------------------------------------#
     Init_Epoch          = 0
-    Freeze_Epoch        = 300
+    Freeze_Epoch        = 600
     Freeze_batch_size   = 8
     #------------------------------------------------------------------#
     #   解冻阶段训练参数
@@ -226,7 +226,7 @@ if __name__ == "__main__":
     #                           Adam可以使用相对较小的UnFreeze_Epoch
     #   Unfreeze_batch_size     模型在解冻后的batch_size
     #------------------------------------------------------------------#
-    UnFreeze_Epoch      = 600
+    UnFreeze_Epoch      = 1200
     Unfreeze_batch_size = 8
     #------------------------------------------------------------------#
     #   Freeze_Train    是否进行冻结训练
