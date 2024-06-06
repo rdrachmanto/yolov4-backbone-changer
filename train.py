@@ -61,7 +61,8 @@ if __name__ == "__main__":
     #   Seed    用于固定随机种子
     #           使得每次独立训练都可以获得一样的结果
     #----------------------------------------------#
-    seed = 11
+    seed = 100 # 11 37 42 50 100
+    print(f"[INFO]seed: {seed}")
     #---------------------------------------------------------------------#
     #   distributed     用于指定是否使用单机多卡分布式运行
     #                   终端指令仅支持Ubuntu。CUDA_VISIBLE_DEVICES用于在Ubuntu下指定显卡。
@@ -88,13 +89,13 @@ if __name__ == "__main__":
     #                   训练前一定要修改classes_path，使其对应自己的数据集
     #---------------------------------------------------------------------#
     # classes_path    = 'model_data/voc_classes.txt'
-    classes_path    = 'model_data/clp_classes.txt'
+    classes_path    = 'model_data/license_classes.txt'
     #---------------------------------------------------------------------#
     #   anchors_path    代表先验框对应的txt文件，一般不修改。
     #   anchors_mask    用于帮助代码找到对应的先验框，一般不修改。
     #---------------------------------------------------------------------#
     # anchors_path    = 'model_data/yolo_anchors.txt'
-    anchors_path    = 'model_data/clp_anchors.txt'
+    anchors_path    = 'model_data/license_anchors.txt'
     anchors_mask    = [[6, 7, 8], [3, 4, 5], [0, 1, 2]]
     #----------------------------------------------------------------------------------------------------------------------------#
     #   权值文件的下载请看README，可以通过网盘下载。模型的 预训练权重 对不同数据集是通用的，因为特征是通用的。
@@ -116,7 +117,8 @@ if __name__ == "__main__":
     #      可以设置mosaic=True，直接随机初始化参数开始训练，但得到的效果仍然不如有预训练的情况。（像COCO这样的大数据集可以这样做）
     #   2、了解imagenet数据集，首先训练分类模型，获得网络的主干部分权值，分类模型的 主干部分 和该模型通用，基于此进行训练。
     #----------------------------------------------------------------------------------------------------------------------------#
-    model_path      = ''
+    model_path      = 'model_data/backbones/mobilenetv2half_cifar100_backbone.pth'
+    # model_path      = ''
     #------------------------------------------------------#
     #   input_shape     输入的shape大小，一定要是32的倍数
     #------------------------------------------------------#
@@ -232,7 +234,7 @@ if __name__ == "__main__":
     #   Freeze_Train    是否进行冻结训练
     #                   默认先冻结主干训练后解冻训练。
     #------------------------------------------------------------------#
-    Freeze_Train        = False
+    Freeze_Train        = True
     
     #------------------------------------------------------------------#
     #   其它训练参数：学习率、优化器、学习率下降有关
@@ -273,7 +275,7 @@ if __name__ == "__main__":
     #------------------------------------------------------------------#
     #   save_period     多少个epoch保存一次权值
     #------------------------------------------------------------------#
-    save_period         = 300
+    save_period         = 2000
     #------------------------------------------------------------------#
     #   save_dir        权值与日志文件保存的文件夹
     #------------------------------------------------------------------#
@@ -332,17 +334,49 @@ if __name__ == "__main__":
     #------------------------------------------------------#
     #   创建yolo模型
     #------------------------------------------------------#
+    
+    # untuk jaga-jaga
+    torch.manual_seed(seed)
+    
     if backbone == 'cspdarknet53':
         model = YoloDarknetBody(anchors_mask, num_classes, pretrained = pretrained)
     else:
         model = YoloBody(anchors_mask, num_classes, backbone=backbone, pretrained = pretrained)
 
-    if args.resume and args.checkpoint_path:
+    if args.resume and args.checkpoint_path != '':
         print('Resume Train')
-        print('Load checkpoint:', args.checkpoint_path)
+
+        #------------------------------------------------------#
+        #   权值文件请看README，百度网盘下载
+        #------------------------------------------------------#
+        if local_rank == 0:
+            print('Load weights {}.'.format(args.checkpoint_path))
+        
+        #------------------------------------------------------#
+        #   根据预训练权重的Key和模型的Key进行加载
+        #------------------------------------------------------#
+        model_dict      = model.state_dict()
+        pretrained_dict = torch.load(args.checkpoint_path, map_location = device)['model_state_dict']
+        load_key, no_load_key, temp_dict = [], [], {}
+        for k, v in pretrained_dict.items():
+            if k in model_dict.keys() and np.shape(model_dict[k]) == np.shape(v):
+                temp_dict[k] = v
+                load_key.append(k)
+            else:
+                no_load_key.append(k)
+        model_dict.update(temp_dict)
+        model.load_state_dict(model_dict)
+        #------------------------------------------------------#
+        #   显示没有匹配上的Key
+        #------------------------------------------------------#
+        if local_rank == 0:
+            print("\nSuccessful Load Key:", str(load_key)[:500], "……\nSuccessful Load Key Num:", len(load_key))
+            print("\nFail To Load Key:", str(no_load_key)[:500], "……\nFail To Load Key num:", len(no_load_key))
+            print("\n\033[1;33;44m温馨提示，head部分没有载入是正常现象，Backbone部分没有载入是错误的。\033[0m")
+        
         checkpoint = torch.load(args.checkpoint_path, map_location=device)
-        model.load_state_dict(checkpoint['model_state_dict'])
-        print('Succesfully load checkpoint')
+        # model.load_state_dict(checkpoint['model_state_dict'])
+        # print('Succesfully load checkpoint')
 
         Init_Epoch = checkpoint['epoch'] - 1
         print('Last epoch: {} | init_epoch: {}'.format(Init_Epoch + 1, Init_Epoch))

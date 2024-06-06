@@ -1,5 +1,5 @@
 import argparse
-import time
+from timeit import default_timer as timer 
 import numpy as np
 import torch
 from functools import partial
@@ -35,8 +35,8 @@ if __name__ == "__main__":
     focal_alpha         = 0.25
     focal_gamma         = 2
     iou_type            = 'ciou'
-    classes_path    = 'model_data/clp_classes.txt'
-    anchors_path    = 'model_data/clp_anchors.txt'
+    classes_path    = 'model_data/mask_classes.txt'
+    anchors_path    = 'model_data/mask_anchors.txt'
     anchors_mask    = [[6, 7, 8], [3, 4, 5], [0, 1, 2]]
     input_shape     = [416, 416]
     batch_size = 1
@@ -53,7 +53,7 @@ if __name__ == "__main__":
 
     seed_everything(seed)
 
-    val_annotation_path     = '2007_val.txt'
+    val_annotation_path     = 'mask_2007_val.txt'
 
     class_names, num_classes = get_classes(classes_path)
     anchors, num_anchors     = get_anchors(anchors_path)
@@ -81,8 +81,6 @@ if __name__ == "__main__":
         if local_rank == 0:
             print("\nSuccessful Load Key:", str(load_key)[:500], "……\nSuccessful Load Key Num:", len(load_key))
             print("\nFail To Load Key:", str(no_load_key)[:500], "……\nFail To Load Key num:", len(no_load_key))
-    # else:
-    #     raise ValueError('Please set the model path!')
     
     yolo_loss    = YOLOLoss(anchors, num_classes, input_shape, Cuda, anchors_mask, label_smoothing, focal_loss, focal_alpha, focal_gamma, iou_type)
 
@@ -99,14 +97,29 @@ if __name__ == "__main__":
                                     drop_last=True, collate_fn=yolo_dataset_collate, sampler=val_sampler, 
                                     worker_init_fn=partial(worker_init_fn, rank=rank, seed=seed))
 
-    model.to('cuda')
+    model.to(device)
     model.eval()
-    start = time.time()
-    for iteration, batch in enumerate(gen_val):
-        with torch.inference_mode():
+
+    latencies = []
+    torch.cuda.synchronize()
+    start_time = timer() 
+    with torch.inference_mode():
+        for iteration, batch in enumerate(gen_val):
             images, targets = batch[0], batch[1]
+            images = images.to(device)
+            targets = [ann.to(device) for ann in targets]
+            
+            start_time = timer() 
             outputs = model(images)
+            end_time = timer()
+            torch.cuda.synchronize()
+            
+            latencies.append(round(end_time-start_time, 4))
+            print(f"Inference time i-{iteration}: {round(end_time-start_time, 4)} seconds")
 
-    end = time.time()
+            if iteration >= 100:
+                break
 
-    print(end-start)
+    average_latency = np.mean(latencies)
+    print(f"\nDevice: {device}")
+    print(f"Average Time per Inference: {round(average_latency, 4)} seconds")
