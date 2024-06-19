@@ -8,36 +8,109 @@ from nets.yolo_darknet import YoloDarknetBody
 from nets.yolo import YoloBody
 from torch.utils.data import DataLoader
 
-from utils.utils import (get_anchors, get_classes, seed_everything,
-                         show_config, worker_init_fn)
-from nets.yolo_training import (YOLOLoss, get_lr_scheduler, set_optimizer_lr,
-                                weights_init)
+from utils.monitor_thread import CPU, Memory, jstat_start, jstat_stop
+from utils.utils import get_anchors, get_classes, seed_everything, worker_init_fn
 from utils.dataloader import YoloDataset, yolo_dataset_collate
-from utils.callbacks import EvalCallback, LossHistory
+
+
+# global variables
+# should be constants, set in other file!
+Cuda = True
+seed = 11
+mosaic              = True
+mosaic_prob         = 0.5
+mixup               = True
+mixup_prob          = 0.5
+special_aug_ratio   = 0.7
+label_smoothing     = 0
+focal_loss          = False
+focal_alpha         = 0.25
+focal_gamma         = 2
+iou_type            = 'ciou'
+anchors_mask    = [[6, 7, 8], [3, 4, 5], [0, 1, 2]]
+
+
+def setup_model(backbone, anchors_mask, num_classes, model_path):
+    if backbone == 'cspdarknet53':
+        model = YoloDarknetBody(anchors_mask, num_classes)
+    else:
+        model = YoloBody(anchors_mask, num_classes, backbone=backbone)
+
+    model_dict      = model.state_dict()
+    pretrained_dict = torch.load(model_path, map_location = device)
+    load_key, no_load_key, temp_dict = [], [], {}
+    for k, v in pretrained_dict.items():
+        if k in model_dict.keys() and np.shape(model_dict[k]) == np.shape(v):
+            temp_dict[k] = v
+            load_key.append(k)
+        else:
+            no_load_key.append(k)
+
+        model_dict.update(temp_dict)
+        model.load_state_dict(model_dict)
+
+    model.to(device)
+
+    return model
+
+
+def load_dataset(val_annotation_path, input_shape, num_classes, shuffle=True, batch_size=1, num_workers=4):
+    with open(val_annotation_path, encoding='utf-8') as f:
+        val_lines   = f.readlines()
+
+    val_sampler     = None
+    val_dataset     = YoloDataset(val_lines, input_shape, num_classes, epoch_length = 600, \
+                                        mosaic=False, mixup=False, mosaic_prob=0, mixup_prob=0, train=False, special_aug_ratio=0)
+    gen_val         = DataLoader(val_dataset, shuffle = shuffle, batch_size = batch_size, num_workers = num_workers, pin_memory=True, 
+                                    drop_last=True, collate_fn=yolo_dataset_collate, sampler=val_sampler, 
+                                    worker_init_fn=partial(worker_init_fn, rank=rank, seed=seed))
+
+    return gen_val
+
+
+def infer(model, gen_val, is_warmup=False):
+    latencies = []
+    torch.cuda.synchronize()
+
+    model.eval()
+
+    with torch.inference_mode():
+        for iteration, batch in enumerate(gen_val):
+            images, targets = batch[0], batch[1]
+            images = images.to(device)
+            targets = [ann.to(device) for ann in targets]
+            
+            start_time = timer() 
+            model(images)
+            end_time = timer()
+            torch.cuda.synchronize()
+            
+            latencies.append(round(end_time-start_time, 4))
+            if is_warmup == True and iteration >= 10:
+                break
+            elif is_warmup == False and iteration >= 100:
+                break
+
+    average_latency = round(np.mean(latencies) * 1000, 4)
+
+    if is_warmup == False:
+        print(f"Average Time per Inference: {average_latency} ms")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--backbone', type=str, default=None, help='backbone for yolo')
-    parser.add_argument('--model_path', type=str, default='', help='model path')
+    parser.add_argument('--backbone', type=str, default=None, help='backbone for yolo', required=True)
+    parser.add_argument('--model-path', type=str, default='', help='model path', required=True)
+    parser.add_argument('--classes-path', type=str, default='', help='classes path', required=True)
+    parser.add_argument('--anchors-path', type=str, default='', help='anchors path', required=True)
+    parser.add_argument('--annot-path', type=str, default='', help='path of the set (train, test) for inference', required=True)
 
     args = parser.parse_args()
+    print(args)
 
-    Cuda = True
-    seed = 11
-    mosaic              = True
-    mosaic_prob         = 0.5
-    mixup               = True
-    mixup_prob          = 0.5
-    special_aug_ratio   = 0.7
-    label_smoothing     = 0
-    focal_loss          = False
-    focal_alpha         = 0.25
-    focal_gamma         = 2
-    iou_type            = 'ciou'
-    classes_path    = 'model_data/mask_classes.txt'
-    anchors_path    = 'model_data/mask_anchors.txt'
-    anchors_mask    = [[6, 7, 8], [3, 4, 5], [0, 1, 2]]
+    classes_path    = args.classes_path
+    anchors_path    = args.anchors_path
     input_shape     = [416, 416]
     batch_size = 1
     num_workers = 4
@@ -46,80 +119,50 @@ if __name__ == "__main__":
     local_rank      = 0
     rank            = 0
 
-    if args.backbone == None:
-            raise ValueError("Select the backbone using flag --backbone")
     backbone        = args.backbone
     model_path      = args.model_path
 
     seed_everything(seed)
 
-    val_annotation_path     = 'mask_2007_val.txt'
+    val_annotation_path     = args.annot_path
 
-    class_names, num_classes = get_classes(classes_path)
+    class_names, num_classes = get_classes(args.classes_path)
     anchors, num_anchors     = get_anchors(anchors_path)
 
-    if backbone == 'cspdarknet53':
-        model = YoloDarknetBody(anchors_mask, num_classes)
-    else:
-        model = YoloBody(anchors_mask, num_classes, backbone=backbone)
-
-    if model_path != '':
-        if local_rank == 0:
-            print('Load weights {}.'.format(model_path))
-        model_dict      = model.state_dict()
-        pretrained_dict = torch.load(model_path, map_location = device)
-        load_key, no_load_key, temp_dict = [], [], {}
-        for k, v in pretrained_dict.items():
-            if k in model_dict.keys() and np.shape(model_dict[k]) == np.shape(v):
-                temp_dict[k] = v
-                load_key.append(k)
-            else:
-                no_load_key.append(k)
-        model_dict.update(temp_dict)
-        model.load_state_dict(model_dict)
-
-        if local_rank == 0:
-            print("\nSuccessful Load Key:", str(load_key)[:500], "……\nSuccessful Load Key Num:", len(load_key))
-            print("\nFail To Load Key:", str(no_load_key)[:500], "……\nFail To Load Key num:", len(no_load_key))
-    
-    yolo_loss    = YOLOLoss(anchors, num_classes, input_shape, Cuda, anchors_mask, label_smoothing, focal_loss, focal_alpha, focal_gamma, iou_type)
-
-    with open(val_annotation_path, encoding='utf-8') as f:
-        val_lines   = f.readlines()
-    num_val     = len(val_lines)
-
-    val_sampler     = None
-    shuffle         = True
-    val_dataset     = YoloDataset(val_lines, input_shape, num_classes, epoch_length = 600, \
-                                        mosaic=False, mixup=False, mosaic_prob=0, mixup_prob=0, train=False, special_aug_ratio=0)
-    
-    gen_val         = DataLoader(val_dataset, shuffle = shuffle, batch_size = batch_size, num_workers = num_workers, pin_memory=True, 
-                                    drop_last=True, collate_fn=yolo_dataset_collate, sampler=val_sampler, 
-                                    worker_init_fn=partial(worker_init_fn, rank=rank, seed=seed))
-
+    model = setup_model(
+        backbone=args.backbone,
+        anchors_mask=anchors_mask,
+        num_classes=num_classes,
+        model_path=args.model_path
+    )
     model.to(device)
-    model.eval()
 
-    latencies = []
-    torch.cuda.synchronize()
-    start_time = timer() 
-    with torch.inference_mode():
-        for iteration, batch in enumerate(gen_val):
-            images, targets = batch[0], batch[1]
-            images = images.to(device)
-            targets = [ann.to(device) for ann in targets]
-            
-            start_time = timer() 
-            outputs = model(images)
-            end_time = timer()
-            torch.cuda.synchronize()
-            
-            latencies.append(round(end_time-start_time, 4))
-            print(f"Inference time i-{iteration}: {round(end_time-start_time, 4)} seconds")
+    gen_val = load_dataset(
+        val_annotation_path=args.annot_path,
+        num_classes=num_classes,
+        input_shape=[416, 416],
+    )
 
-            if iteration >= 100:
-                break
+    infer(model, gen_val, is_warmup=True)
 
-    average_latency = np.mean(latencies)
-    print(f"\nDevice: {device}")
-    print(f"Average Time per Inference: {round(average_latency, 4)} seconds")
+    # Begin monitor thread
+    cpu_thread = CPU()
+    cpu_thread.start()
+    mem_thread = Memory()
+    mem_thread.start()
+    jstat_start()
+
+    infer(model, gen_val, is_warmup=False)
+
+    # Monitor thread stops
+    cpu_thread.stop()
+    mem_thread.stop()
+    cpu_thread.join()
+    mem_thread.join()
+    gpu = float(jstat_stop()[0])
+
+    cpu_use = round(cpu_thread.result[0], 2)  # type: ignore
+    mem_use = round(mem_thread.result[0] / 1024, 2)  # type: ignore
+    gpu = round(gpu, 2)
+
+    print(f"{cpu_use},{gpu},{mem_use}")
