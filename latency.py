@@ -165,4 +165,6 @@ if __name__ == "__main__":
     mem_use = round(mem_thread.result[0] / 1024, 2)  # type: ignore
     gpu = round(gpu, 2)
 
-    print(f"{cpu_use},{gpu},{mem_use}")
+    print(f"CPU: {cpu_use}")
+    print(f"GPU: {gpu}")
+    print(f"Mem: {mem_use}")
