@@ -159,8 +159,10 @@ if __name__ == "__main__":
     mem_thread.stop()
     cpu_thread.join()
     mem_thread.join()
-    gpu = float(jstat_stop()[1])
-    pow = float(jstat_stop()[0])
+
+    jstat = jstat_stop()
+    pow = float(jstat[0])
+    gpu = float(jstat[1])
 
     cpu_use = round(cpu_thread.result[0], 2)  # type: ignore
     mem_use = round(mem_thread.result[0] / 1024, 2)  # type: ignore
