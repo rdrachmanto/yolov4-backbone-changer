@@ -1,5 +1,5 @@
 import argparse
-from timeit import default_timer as timer 
+from datetime import datetime
 import numpy as np
 import torch
 from functools import partial
@@ -69,7 +69,6 @@ def load_dataset(val_annotation_path, input_shape, num_classes, shuffle=True, ba
 
 
 def infer(model, gen_val, is_warmup=False):
-    latencies = []
     torch.cuda.synchronize()
 
     model.eval()
@@ -80,21 +79,13 @@ def infer(model, gen_val, is_warmup=False):
             images = images.to(device)
             targets = [ann.to(device) for ann in targets]
             
-            start_time = timer() 
             model(images)
-            end_time = timer()
             torch.cuda.synchronize()
             
-            latencies.append(round(end_time-start_time, 4))
             if is_warmup == True and iteration >= 10:
                 break
-            elif is_warmup == False and iteration >= 100:
+            elif is_warmup == False and iteration >= 1000:
                 break
-
-    average_latency = round(np.mean(latencies) * 1000, 4)
-
-    if is_warmup == False:
-        print(f"Average Time per Inference: {average_latency} ms")
 
 
 if __name__ == "__main__":
@@ -152,7 +143,15 @@ if __name__ == "__main__":
     mem_thread.start()
     jstat_start()
 
+    # Inference
+    start = datetime.now()
     infer(model, gen_val, is_warmup=False)
+    end = datetime.now()
+    elapsed = (end - start).total_seconds()
+    lat = round((elapsed / 1000) * 1000, 2)
+
+    print(f"Elapsed: {elapsed}s!")
+    print(f"Latency: {lat}ms!")
 
     # Monitor thread stops
     cpu_thread.stop()
@@ -161,8 +160,8 @@ if __name__ == "__main__":
     mem_thread.join()
 
     jstat = jstat_stop()
-    pow = float(jstat[0])
-    gpu = float(jstat[1])
+    pow = float(jstat[1])
+    gpu = float(jstat[0])
 
     cpu_use = round(cpu_thread.result[0], 2)  # type: ignore
     mem_use = round(mem_thread.result[0] / 1024, 2)  # type: ignore

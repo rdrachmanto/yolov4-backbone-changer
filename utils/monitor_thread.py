@@ -56,7 +56,7 @@ class Memory(threading.Thread):
 
 def jstat_start():
     subprocess.check_output(
-        f'tegrastats --interval 1000 --start --logfile test.txt',
+        f'tegrastats --interval --start --logfile test.txt',
         shell=True)
 
 
@@ -75,7 +75,7 @@ def jstat_stop():
                 entire_gpu.append(float(gpu_))
 
         for line in lines:
-            pattern = r"VDD_IN (\d+)%"
+            pattern = r"VDD_IN (\d+)mW"
             match = re.search(pattern, line)
             if match:
                 pow = match.group(1)
@@ -87,7 +87,8 @@ def jstat_stop():
         result_pow = 0
         result_gpu = 0
         entire_gpu = entire_gpu
+        entire_pow = entire_pow
         pass
 
     subprocess.check_output("rm test.txt", shell=True)
-    return result_pow, result_gpu, entire_gpu, entire_pow
+    return result_gpu, result_pow, entire_gpu, entire_pow
