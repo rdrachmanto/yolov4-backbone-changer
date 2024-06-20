@@ -68,18 +68,18 @@ def jstat_stop():
     entire_pow = []
     try:
         for line in lines:
-            pattern = r"VDD_IN (\d+)%"
-            match = re.search(pattern, line)
-            if match:
-                pow = match.group(1)
-                entire_pow.append(float(pow))
-
-
             pattern = r"GR3D_FREQ (\d+)%"
             match = re.search(pattern, line)
             if match:
                 gpu_ = match.group(1)
                 entire_gpu.append(float(gpu_))
+
+        for line in lines:
+            pattern = r"VDD_IN (\d+)%"
+            match = re.search(pattern, line)
+            if match:
+                pow = match.group(1)
+                entire_pow.append(float(pow))
 
         result_pow = sum(entire_pow) / len(entire_pow)
         result_gpu = sum(entire_gpu) / len(entire_gpu)
