@@ -159,7 +159,8 @@ if __name__ == "__main__":
     mem_thread.stop()
     cpu_thread.join()
     mem_thread.join()
-    gpu = float(jstat_stop()[0])
+    gpu = float(jstat_stop()[1])
+    pow = float(jstat_stop()[0])
 
     cpu_use = round(cpu_thread.result[0], 2)  # type: ignore
     mem_use = round(mem_thread.result[0] / 1024, 2)  # type: ignore
@@ -168,3 +169,4 @@ if __name__ == "__main__":
     print(f"CPU: {cpu_use}")
     print(f"GPU: {gpu}")
     print(f"Mem: {mem_use}")
+    print(f"VDD: {pow}")
