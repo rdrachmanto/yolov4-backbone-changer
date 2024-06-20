@@ -64,20 +64,30 @@ def jstat_stop():
     subprocess.check_output(f'tegrastats --stop', shell=True)
     out = open("test.txt", 'r')
     lines = out.read().split('\n')
-    entire = []
+    entire_gpu = []
+    entire_pow = []
     try:
         for line in lines:
+            pattern = r"VDD_IN (\d+)%"
+            match = re.search(pattern, line)
+            if match:
+                pow = match.group(1)
+                entire_pow.append(float(pow))
+
+
             pattern = r"GR3D_FREQ (\d+)%"
             match = re.search(pattern, line)
             if match:
                 gpu_ = match.group(1)
-                entire.append(float(gpu_))
-        # entire = [num for num in entire if num > 10.0]
-        result = sum(entire) / len(entire)
+                entire_gpu.append(float(gpu_))
+
+        result_pow = sum(entire_pow) / len(entire_pow)
+        result_gpu = sum(entire_gpu) / len(entire_gpu)
     except:
-        result = 0
-        entire = entire
+        result_pow = 0
+        result_gpu = 0
+        entire_gpu = entire_gpu
         pass
 
     subprocess.check_output("rm test.txt", shell=True)
-    return result, entire
+    return result_pow, result_gpu, entire_gpu, entire_pow
