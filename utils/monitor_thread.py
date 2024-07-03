@@ -54,6 +54,33 @@ class Memory(threading.Thread):
         self.event.set()
 
 
+class INAEXT(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.result = None
+        self.event = threading.Event()
+        self._list = []
+
+    def run(self):
+        try:
+            while not self.event.is_set():
+                from ina219 import INA219
+                ina = INA219(0.1)
+                ina.configure()
+                power_ = ina.power()
+                if power_ > 0.0:
+                    with threading.Lock():
+                        self._list.append(power_)
+            self.event.clear()
+            res = sum(self._list) / len(self._list)
+            self.result = res, self._list
+        except:
+            self.result = 0
+
+    def stop(self):
+        self.event.set()
+
+
 def jstat_start():
     subprocess.check_output(
         f'tegrastats --interval --start --logfile test.txt',
@@ -92,3 +119,6 @@ def jstat_stop():
 
     subprocess.check_output("rm test.txt", shell=True)
     return result_gpu, result_pow, entire_gpu, entire_pow
+
+
+

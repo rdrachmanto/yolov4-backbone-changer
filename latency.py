@@ -8,7 +8,7 @@ from nets.yolo_darknet import YoloDarknetBody
 from nets.yolo import YoloBody
 from torch.utils.data import DataLoader
 
-from utils.monitor_thread import CPU, Memory, jstat_start, jstat_stop
+from utils.monitor_thread import CPU, INAEXT, Memory, jstat_start, jstat_stop
 from utils.utils import get_anchors, get_classes, seed_everything, worker_init_fn
 from utils.dataloader import YoloDataset, yolo_dataset_collate
 
@@ -141,7 +141,9 @@ if __name__ == "__main__":
     cpu_thread.start()
     mem_thread = Memory()
     mem_thread.start()
-    jstat_start()
+    pow_thread = INAEXT()
+    pow_thread.start()
+    # jstat_start()
 
     # Inference
     start = datetime.now()
@@ -155,19 +157,22 @@ if __name__ == "__main__":
 
     # Monitor thread stops
     cpu_thread.stop()
-    mem_thread.stop()
     cpu_thread.join()
+    mem_thread.stop()
     mem_thread.join()
+    pow_thread.stop()
+    pow_thread.join()
 
-    jstat = jstat_stop()
-    pow = float(jstat[1])
-    gpu = float(jstat[0])
+    # jstat = jstat_stop()
+    # pow = float(jstat[1])
+    # gpu = float(jstat[0])
 
     cpu_use = round(cpu_thread.result[0], 2)  # type: ignore
     mem_use = round(mem_thread.result[0] / 1024, 2)  # type: ignore
-    gpu = round(gpu, 2)
+    # gpu = round(gpu, 2)
+    pow_use = round(sum(pow_thread.result[1]), 2) 
 
     print(f"CPU: {cpu_use}")
-    print(f"GPU: {gpu}")
+    # print(f"GPU: {gpu}")
     print(f"Mem: {mem_use}")
     print(f"VDD: {pow}")
